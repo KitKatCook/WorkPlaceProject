@@ -5,12 +5,13 @@ The project is assessed by a project report and a presentation. The report contr
 
 The project will be graded using the standard university grading system, and will contribute to your overall classification. Your degree classification will be mapped to the table below to give your apprenticeship grade (Please note: this table is taken directly from the apprenticeship standard which is why there is a table for marks).
 
-Degree Award Class							Grading Equivalence 	Marks Level
-First-class Honours (1st) 					Distinction 			70+
-Second-class Honours, upper division (2:1) 	Merit					60–69
-Second-class Honours, lower division (2:2) 	Pass					50–59 
-Third-class Honours (3rd)					Pass					40–49 
- The work will be marked by your project supervisor, the independent assessor and someone from your workplace (eg line manager, apprenticeship mentor). They will mark the work and agree the final grade. All projects will then be moderated by other members of the course team to ensure consistency.
+Degree Award Class				Grading Equivalence 	Marks Level
+First-class Honours (1st) 			Distinction 			70+
+Second-class Honours, upper division (2:1) 	Merit					60â€“69
+Second-class Honours, lower division (2:2) 	Pass					50â€“59 
+Third-class Honours (3rd)			Pass					40â€“49 
+
+The work will be marked by your project supervisor, the independent assessor and someone from your workplace (eg line manager, apprenticeship mentor). They will mark the work and agree the final grade. All projects will then be moderated by other members of the course team to ensure consistency.
 
  You are required to write a report documenting the work undertaken for your work-based project. Your report should cover:
 

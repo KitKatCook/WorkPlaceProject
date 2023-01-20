@@ -5,11 +5,11 @@ VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Web", "src\WorkPlaceProject.Web\WorkPlaceProject.Web.csproj", "{3CE38610-DDA5-4B5E-B39B-070C2C5BBC5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkPlaceProject.Application", "src\WorkPlaceProject.Application\WorkPlaceProject.Application.csproj", "{7818C87D-7AA6-4F46-B750-8315A45171A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Application", "src\WorkPlaceProject.Application\WorkPlaceProject.Application.csproj", "{7818C87D-7AA6-4F46-B750-8315A45171A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkPlaceProject.Domain", "src\WorkPlaceProject.Domain\WorkPlaceProject.Domain.csproj", "{610DD5D2-8018-4143-BFA3-74A6F12B6978}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Domain", "src\WorkPlaceProject.Domain\WorkPlaceProject.Domain.csproj", "{610DD5D2-8018-4143-BFA3-74A6F12B6978}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkPlaceProject.Persistence", "src\WorkPlaceProject.Persistence\WorkPlaceProject.Persistence.csproj", "{3F4ECB6F-7936-4EC3-9661-33E7047DA827}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Persistence", "src\WorkPlaceProject.Persistence\WorkPlaceProject.Persistence.csproj", "{3F4ECB6F-7936-4EC3-9661-33E7047DA827}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

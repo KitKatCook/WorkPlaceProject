@@ -3,6 +3,18 @@
 
 <h1>Planning Poker</h1>
 
+<div class="row">
+    
+    @foreach (int card in Enumerable.Range(1, 5))
+    {
+        <div class="column">
+            <div class="card">
+                <h3>Card @card</h3>
+            </div>
+        </div>
+    }
+</div>
+
 @code {
 
 }

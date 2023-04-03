@@ -1,13 +1,11 @@
-using WorkPlaceProject.Domain;
-
-namespace WorkPlaceProject.Application
+namespace WorkPlaceProject.Application.Weather
 {
     public class WeatherForecastApplicationService : IWeatherForecastApplicationService
     {
         private static readonly string[] Summaries = new[]
         {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+        };
 
         public Task<WeatherForecastAdto[]> GetForecastAsync(DateTime startDate)
         {

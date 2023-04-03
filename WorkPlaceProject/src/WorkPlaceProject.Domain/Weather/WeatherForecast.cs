@@ -1,4 +1,4 @@
-namespace WorkPlaceProject.Domain
+namespace WorkPlaceProject.Domain.Weather
 {
     public class WeatherForecast
     {

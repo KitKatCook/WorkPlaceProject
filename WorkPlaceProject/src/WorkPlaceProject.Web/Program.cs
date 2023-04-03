@@ -1,6 +1,6 @@
-using WorkPlaceProject.Application;
 using Microsoft.AspNetCore.ResponseCompression;
 using WorkPlaceProject.Web.Hubs;
+using WorkPlaceProject.Application.Weather;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +35,7 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapHub<ChatHub>("/chathub");
+app.MapHub<StoryPointerHub>("/storypointerhub");
 app.MapFallbackToPage("/_Host");
 
 app.Run();

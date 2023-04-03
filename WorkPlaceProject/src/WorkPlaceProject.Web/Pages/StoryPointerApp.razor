@@ -1,0 +1,124 @@
+﻿@page "/storyPointerApp/{sessionCode}/{userCode}"
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Net.NetworkInformation
+@using WorkPlaceProject.Domain.StoryPointer.ValueTypes
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<PageTitle>Story Pointer</PageTitle>
+<h3>Story Pointer</h3>
+
+<div class="form-group">
+    <label>
+        Hello @UserCode:
+       
+    </label>
+</div>
+<div class="form-group">
+    <label>
+        Message:
+        <input @bind="_messageInput" size="50" />
+    </label>
+</div>
+<button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+
+<hr>
+
+<ul id="messagesList">
+    @foreach (var message in _messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+
+
+<b>@selectedValue</b>
+<div class="row">
+
+    @foreach (var card in FibonacciValueType.Values)
+    {
+        <div class="column">
+            <div class="card" @onclick="@(e => selectedValue = card.Value.ToString())">
+                <h3>@card.Value</h3>
+                <h3>@card.Description</h3>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private HubConnection? _hubConnection;
+    private List<string> _messages = new List<string>();
+
+    [Parameter]
+    public string? SessionCode { get; set; }
+
+    [Parameter]
+    public string? UserCode { get; set; }
+
+    private string? _messageInput;
+    private string? selectedValue;
+
+    public bool IsConnected =>
+        _hubConnection?.State == HubConnectionState.Connected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/StoryPointerHub"))
+            .Build();
+
+        _hubConnection.On<string, string>("ReceiveUserMessage", (user, message) =>
+        {
+            var encodedMsg = $"{user}: {message}";
+            _messages.Add(encodedMsg);
+            InvokeAsync(StateHasChanged);
+
+        });
+
+        _hubConnection.On<string>("ReceiveInfoMessage", ( message) =>
+        {
+            var encodedMsg = $"{message}";
+            _messages.Add(encodedMsg);
+            InvokeAsync(StateHasChanged);
+
+        });
+
+        await _hubConnection.StartAsync();
+
+        await _hubConnection.SendAsync("AddToGroup", SessionCode, UserCode);
+        
+
+    }
+
+    private async Task Send()
+    {
+        if (_messageInput is null || _messageInput.Length < 1)
+        {
+            // add an error
+            return;
+        }
+
+        if (_hubConnection is not null && SessionCode is not null)
+        {
+            await _hubConnection.SendAsync("SendGroupMessage", SessionCode, UserCode, _messageInput);
+            _messageInput = "";
+        }
+        else
+        {
+            await _hubConnection.SendAsync("SendMessage", UserCode, _messageInput);
+            _messageInput = "";
+        }
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+}

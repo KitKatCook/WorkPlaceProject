@@ -10,4 +10,8 @@
     <ProjectReference Include="..\WorkPlaceProject.Domain\WorkPlaceProject.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="StoryPointer\" />
+  </ItemGroup>
+
 </Project>

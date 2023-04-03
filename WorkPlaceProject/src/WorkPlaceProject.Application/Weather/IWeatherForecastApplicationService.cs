@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkPlaceProject.Domain;
 
-namespace WorkPlaceProject.Application
+namespace WorkPlaceProject.Application.Weather
 {
     public interface IWeatherForecastApplicationService
     {

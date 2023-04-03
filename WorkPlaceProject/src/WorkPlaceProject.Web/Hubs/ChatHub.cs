@@ -8,5 +8,10 @@ namespace WorkPlaceProject.Web.Hubs
         {
             await Clients.All.SendAsync("ReceiveMessage", user, message);
         }
+
+        public async Task SendMessageGroup(string group, string user, string message)
+        {
+            await Clients.Group(group).SendAsync("ReceiveMessage", user, message);
+        }
     }
 }

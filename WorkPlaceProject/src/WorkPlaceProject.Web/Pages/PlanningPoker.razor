@@ -1,15 +1,24 @@
 ﻿@page "/planningpoker"
 <PageTitle>Planning Poker</PageTitle>
+@using WorkPlaceProject.Application
+@using WorkPlaceProject.Domain.StoryPointer.ValueTypes
 
 <h1>Planning Poker</h1>
 
+<button @onclick="GenerateSessionCode">Send</button>
+
+<b>@sessionCode</b>
+
+<b>@selectedValue</b>
+
 <div class="row">
     
-    @foreach (int card in Enumerable.Range(1, 5))
+    @foreach (var card in FibonacciValueType.Values)
     {
         <div class="column">
-            <div class="card">
-                <h3>Card @card</h3>
+            <div class="card" @onclick="@(e => selectedValue = card.Value.ToString())">
+                <h3>@card.Value</h3>
+                <h3>@card.Description</h3>
             </div>
         </div>
     }
@@ -17,4 +26,13 @@
 
 @code {
 
+    private string? sessionCode;
+    private string? selectedValue;
+
+    private async Task GenerateSessionCode()
+    {
+        sessionCode = await Task.FromResult(SessionCodeGenerator.Generate());
+    }
+    
+    
 }

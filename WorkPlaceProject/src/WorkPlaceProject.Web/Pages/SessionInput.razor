@@ -1,0 +1,55 @@
+﻿@page "/sessionInput"
+<PageTitle>Planning Poker</PageTitle>
+@inject NavigationManager UriHelper
+
+<h1>Planning Poker</h1>
+
+<div class="form-group">
+    <label>
+        Username:
+        <input @bind="_userName" size="50" />
+    </label>
+</div>
+
+<div class="form-group">
+    <label>
+        Session Code:
+        <input @bind="_sessionCode" size="50" />
+    </label>
+</div>
+<button @onclick="OnClick">Send</button>
+
+@code {
+    string? _sessionCode;
+    string? _userName;
+
+    private void OnClick()
+    {
+        if (SessionExists()
+        && UserExists())
+        {
+            UriHelper.NavigateTo($"storyPointerApp/{_sessionCode}/{_userName}");
+        }
+    }
+
+    private bool SessionExists()
+    {
+        if (_sessionCode is not null 
+        && _sessionCode.Length == 6)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool UserExists()
+    {
+        if (_userName is not null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+}

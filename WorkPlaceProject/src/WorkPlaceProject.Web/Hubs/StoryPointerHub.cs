@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace WorkPlaceProject.Web.Hubs
 {
@@ -40,7 +41,7 @@ namespace WorkPlaceProject.Web.Hubs
 
         public override Task OnConnectedAsync()
         {
-            //_connections.Add(Context.User.Identity.Name, Context.ConnectionId);
+            _connections.Add(Context.User.Identity.Name, Context.ConnectionId);
             return base.OnConnectedAsync();
         }
 

@@ -38,6 +38,7 @@ builder.Services.AddResponseCompression(opts =>
         new[] { "application/octet-stream" });
 });
 
+
 var app = builder.Build();
 
 app.UseResponseCompression();
@@ -55,9 +56,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-//app.UseAuthentication();
-//app.UseAuthorization();
 
 app.MapBlazorHub();
 app.MapHub<ChatHub>("/chathub");

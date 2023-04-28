@@ -5,11 +5,14 @@
 
 <h1>Planning Poker</h1>
 
-<button @onclick="GenerateSessionCode">Send</button>
+<button @onclick="GenerateSessionCode">Generate</button>
 
 <b>@sessionCode</b>
 
 <b>@selectedValue</b>
+
+<b>@email</b>
+<button @onclick="FormatEmail">Format</button>
 
 <div class="row">
     
@@ -28,11 +31,15 @@
 
     private string? sessionCode;
     private string? selectedValue;
+    private string email = "kit.cook@mhr.co.uk";
 
     private async Task GenerateSessionCode()
     {
         sessionCode = await Task.FromResult(SessionCodeGenerator.Generate());
     }
     
-    
+    private async Task FormatEmail()
+    {
+        email = await Task.FromResult(UsernameFormatter.Format(email));
+    }
 }

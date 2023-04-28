@@ -1,6 +1,5 @@
 ﻿@page "/storyPointerApp/{sessionCode}/{userCode}"
 @using Microsoft.AspNetCore.SignalR.Client
-@using System.Net.NetworkInformation
 @using WorkPlaceProject.Domain.StoryPointer.ValueTypes
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
@@ -8,44 +7,50 @@
 <PageTitle>Story Pointer</PageTitle>
 <h3>Story Pointer</h3>
 
-<div class="form-group">
-    <label>
-        Hello @UserCode:
-       
-    </label>
-</div>
-<div class="form-group">
-    <label>
-        Message:
-        <input @bind="_messageInput" size="50" />
-    </label>
-</div>
-<button @onclick="Send" disabled="@(!IsConnected)">Send</button>
-
 <hr>
 
-<ul id="messagesList">
-    @foreach (var message in _messages)
-    {
-        <li>@message</li>
-    }
-</ul>
+@*<b>@selectedValue</b>*@
 
+<section>
+    <article>
+        <div class="row">
 
-
-<b>@selectedValue</b>
-<div class="row">
-
-    @foreach (var card in FibonacciValueType.Values)
-    {
-        <div class="column">
-            <div class="card" @onclick="@(e => selectedValue = card.Value.ToString())">
-                <h3>@card.Value</h3>
-                <h3>@card.Description</h3>
-            </div>
+            @foreach (var card in FibonacciValueType.Values)
+            {
+                <div class="column">
+                    <div class="card" @onclick="(e => SendStoryPoints(card.Value.ToString()))">
+                        <h3>@card.Value</h3>
+                        <h3>@card.Description</h3>
+                    </div>
+                </div>
+            }
         </div>
-    }
-</div>
+    </article>
+    <article>
+        <ul id="messagesList">
+            @foreach (var message in _messages)
+            {
+                <li>@message</li>
+            }
+        </ul>
+    </article>
+</section>
+
+<section>
+    <div class="form-group">
+        <label>
+            Hello @UserCode
+
+        </label>
+    </div>
+    <div class="form-group">
+        <label>
+            Message:
+            <input @bind="_messageInput" size="50" />
+        </label>
+        <button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+    </div>
+</section>
 
 @code {
     private HubConnection? _hubConnection;
@@ -88,8 +93,6 @@
         await _hubConnection.StartAsync();
 
         await _hubConnection.SendAsync("AddToGroup", SessionCode, UserCode);
-        
-
     }
 
     private async Task Send()
@@ -105,13 +108,23 @@
             await _hubConnection.SendAsync("SendGroupMessage", SessionCode, UserCode, _messageInput);
             _messageInput = "";
         }
-        else
+        else if(_hubConnection is not null)
         {
             await _hubConnection.SendAsync("SendMessage", UserCode, _messageInput);
             _messageInput = "";
         }
     }
 
+    private async Task SendStoryPoints(string storyPoints)
+    {
+        selectedValue = storyPoints;
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.SendAsync("SendGroupMessage", SessionCode, UserCode, $" selected {selectedValue} story points.");
+            await _hubConnection.SendAsync("SendGroupInfoMessage", SessionCode, UserCode, $" selected {selectedValue} story points.");
+        }
+
+    }
 
 
     public async ValueTask DisposeAsync()

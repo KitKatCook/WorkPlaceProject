@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Graph;
+using Microsoft.Identity.Web;
+
 
 namespace WorkPlaceProject.Web.Hubs
 {
+    [AllowAnonymous()]
     public class StoryPointerHub : Hub
     {
         private static readonly ConnectionMapping<string> _connections = new ();
@@ -41,7 +45,7 @@ namespace WorkPlaceProject.Web.Hubs
 
         public override Task OnConnectedAsync()
         {
-            _connections.Add(Context.User.Identity.Name, Context.ConnectionId);
+            //_connections.Add(Context.User.Identity.Name, Context.ConnectionId);
             return base.OnConnectedAsync();
         }
 

@@ -1,60 +1,72 @@
 ﻿@page "/storyPointerApp/{sessionCode}/{userCode}"
 @using Microsoft.AspNetCore.SignalR.Client
+@using WorkPlaceProject.Application;
 @using WorkPlaceProject.Domain.StoryPointer.ValueTypes
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
+
+@using Microsoft.Identity.Web
+@using Microsoft.Graph
+@inject Microsoft.Graph.GraphServiceClient GraphServiceClient
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+
 
 <PageTitle>Story Pointer</PageTitle>
 <h3>Story Pointer</h3>
 
 <hr>
 
-@*<b>@selectedValue</b>*@
+<AuthorizeView>
+    <Authorized>
+        
+        <section>
+            <article>
+                <ul id="messagesList">
+                    @foreach (var message in _messages)
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </article>
+        </section>
 
-<section>
-    <article>
-        <div class="row">
+        <section>
+            <article>
+                <div class="row">
 
-            @foreach (var card in FibonacciValueType.Values)
-            {
-                <div class="column">
-                    <div class="card" @onclick="(e => SendStoryPoints(card.Value.ToString()))">
-                        <h3>@card.Value</h3>
-                        <h3>@card.Description</h3>
-                    </div>
+                    @foreach (var card in FibonacciValueType.Values)
+                    {
+                        <div class="column">
+                            <div class="card" @onclick="(e => SendStoryPoints(card.Value.ToString()))">
+                                <h3>@card.Value</h3>
+                                <h3>@card.Description</h3>
+                            </div>
+                        </div>
+                    }
                 </div>
-            }
-        </div>
-    </article>
-    <article>
-        <ul id="messagesList">
-            @foreach (var message in _messages)
-            {
-                <li>@message</li>
-            }
-        </ul>
-    </article>
-</section>
+            </article>
+        </section>
 
-<section>
-    <div class="form-group">
-        <label>
-            Hello @UserCode
+        <section>
+            <div class="form-group">
+                <label>
+                    Message:
+                    <input @bind="_messageInput" size="50" />
+                </label>
+                <button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+            </div>
+       </section>
 
-        </label>
-    </div>
-    <div class="form-group">
-        <label>
-            Message:
-            <input @bind="_messageInput" size="50" />
-        </label>
-        <button @onclick="Send" disabled="@(!IsConnected)">Send</button>
-    </div>
-</section>
+    </Authorized>
+    <NotAuthorized>
+        ahhhhhhhh
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private HubConnection? _hubConnection;
     private List<string> _messages = new List<string>();
+    private User? user;
 
     [Parameter]
     public string? SessionCode { get; set; }
@@ -65,11 +77,19 @@
     private string? _messageInput;
     private string? selectedValue;
 
-    public bool IsConnected =>
-        _hubConnection?.State == HubConnectionState.Connected;
+    public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            user = await GraphServiceClient.Me.Request().GetAsync();
+        }
+        catch (Exception ex)
+        {
+            ConsentHandler.HandleException(ex);
+        }
+
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/StoryPointerHub"))
             .Build();
@@ -93,6 +113,7 @@
         await _hubConnection.StartAsync();
 
         await _hubConnection.SendAsync("AddToGroup", SessionCode, UserCode);
+
     }
 
     private async Task Send()

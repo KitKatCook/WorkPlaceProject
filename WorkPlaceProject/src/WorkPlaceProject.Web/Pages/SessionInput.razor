@@ -1,6 +1,10 @@
 ﻿@page "/sessionInput"
 <PageTitle>Planning Poker</PageTitle>
 @inject NavigationManager UriHelper
+@using Microsoft.Identity.Web
+@using Microsoft.Graph
+@inject Microsoft.Graph.GraphServiceClient GraphServiceClient
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 <h1>Planning Poker</h1>
 
@@ -19,14 +23,28 @@
 </div>
 <button @onclick="OnClick">Send</button>
 
-@code {
+@code 
+{
     string? _sessionCode;
     string? _userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            User user = await GraphServiceClient.Me.Request().GetAsync();
+            _userName = user.GivenName;
+        }
+        catch (Exception ex)
+        {
+            ConsentHandler.HandleException(ex);
+        }
+    }
 
     private void OnClick()
     {
         if (SessionExists()
-        && UserExists())
+            && UserExists())
         {
             UriHelper.NavigateTo($"storyPointerApp/{_sessionCode}/{_userName}");
         }

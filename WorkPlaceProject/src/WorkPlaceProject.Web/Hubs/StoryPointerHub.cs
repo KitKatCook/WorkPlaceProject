@@ -3,13 +3,12 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 
-
 namespace WorkPlaceProject.Web.Hubs
 {
     [AllowAnonymous()]
     public class StoryPointerHub : Hub
     {
-        private static readonly ConnectionMapping<string> _connections = new ();
+        private static readonly ConnectionMap _connectionMap = new ();
 
         public async Task SendMessage(string user, string message)
         {
@@ -29,6 +28,8 @@ namespace WorkPlaceProject.Web.Hubs
 
         public async Task AddToGroup(string groupName, string userName)
         {
+            _connectionMap.Add(Context.ConnectionId, groupName, userName);
+
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
             await Clients.Group(groupName)
@@ -41,17 +42,24 @@ namespace WorkPlaceProject.Web.Hubs
 
             await Clients.Group(groupName)
                 .SendAsync("ReceiveInfoMessage", $"{userName} has left the session=[{groupName}].");
+
+            _connectionMap.Remove(Context.ConnectionId);
         }
 
         public override Task OnConnectedAsync()
         {
-            //_connections.Add(Context.User.Identity.Name, Context.ConnectionId);
             return base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            await RemoveFromGroup("", "");
+
+            UserDto? spUser = _connectionMap.Get(Context.ConnectionId);
+
+            if(spUser is not null)
+            {
+                await RemoveFromGroup(spUser.Group, spUser.Username);
+            }
 
             //_connections.Remove(Context.User.Identity.Name, Context.ConnectionId);
 
@@ -59,3 +67,12 @@ namespace WorkPlaceProject.Web.Hubs
         }
     }
 }
+
+
+
+/* TODO
+ Add reddis cache for session chat history
+
+ 
+ 
+ */

@@ -9,6 +9,9 @@ using StackExchange.Redis;
 using WorkPlaceProject.Persistence.StoryPointer;
 using WorkPlaceProject.Application.StoryPointer;
 using WorkPlaceProject.Domain.StoryPointer;
+using WorkPlaceProject.Persistence.StoryPointerSession;
+using WorkPlaceProject.Application.StoryPointerSession;
+using WorkPlaceProject.Domain.StoryPointerSession;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +46,10 @@ builder.Services.AddSingleton<WeatherForecastApplicationService>();
 builder.Services.AddScoped<IStoryPointSelectionApplicationService, StoryPointSelectionApplicationService>();
 builder.Services.AddScoped<IStoryPointSelectionDomainService, StoryPointSelectionDomainService>();
 builder.Services.AddScoped<IStoryPointSelectionRepository, StoryPointSelectionRepository>();
+
+builder.Services.AddScoped<IPointerSessionApplicationService, PointerSessionApplicationService>();
+builder.Services.AddScoped<IPointerSessionDomainService, PointerSessionDomainService>();
+builder.Services.AddScoped<IPointerSessionRepository, PointerSessionRepository>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(options => 
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));

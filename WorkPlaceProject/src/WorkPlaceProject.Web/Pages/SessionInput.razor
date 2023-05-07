@@ -3,10 +3,19 @@
 @inject NavigationManager UriHelper
 @using Microsoft.Identity.Web
 @using Microsoft.Graph
+@using WorkPlaceProject.Application;
+@using WorkPlaceProject.Application.StoryPointer;
+@using WorkPlaceProject.Application.StoryPointerSession;
+@using WorkPlaceProject.Domain.StoryPointerSession;
+
 @inject Microsoft.Graph.GraphServiceClient GraphServiceClient
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
+@inject IPointerSessionApplicationService PointerSessionApplicationService
+
 <h1>Planning Poker</h1>
+
+<h2>Join Session</h2>
 
 <div class="form-group">
     <label>
@@ -21,44 +30,125 @@
         <input @bind="_sessionCode" size="50" />
     </label>
 </div>
-<button @onclick="OnClick">Send</button>
+<button @onclick="JoinSession">Join</button>
+
+<br />
+
+<h2>Host Session</h2>
+
+<div class="form-group">
+    <label>
+        Username:
+        <input @bind="_userName" size="50" disabled />
+    </label>
+</div>
+<div class="form-group">
+    <label>
+        Generate Code:
+        <button @onclick="GenerateSessionCode">Generate</button>
+    </label>
+    <label>
+        SessionCode:
+        <input @bind="_generatedSessionCode" size="50" disabled />
+    </label>
+</div>
+
+<button @onclick="HostSession">Host</button>
+
+<h1>@_error</h1>
 
 @code 
 {
+    User user;
     string? _sessionCode;
+    string? _generatedSessionCode;
     string? _userName;
+
+    string? _error = "";
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            User user = await GraphServiceClient.Me.Request().GetAsync();
+            user = await GraphServiceClient.Me.Request().GetAsync();
             _userName = user.GivenName;
         }
         catch (Exception ex)
         {
+            _error = "GraphServiceClient error";
             ConsentHandler.HandleException(ex);
         }
     }
 
-    private void OnClick()
+    private void JoinSession()
     {
-        if (SessionExists()
+        if (SessionExists(_sessionCode)
             && UserExists())
         {
+            PointerSession? session = PointerSessionApplicationService.GetPointerSessionByCode(_sessionCode);
+
+            if (session is null)
+            {
+                _error = $"Session does not exist for code=[{_sessionCode}].";
+                return;
+            }
+
+
             UriHelper.NavigateTo($"storyPointerApp/{_sessionCode}/{_userName}");
         }
     }
 
-    private bool SessionExists()
+    private void HostSession()
     {
-        if (_sessionCode is not null 
-        && _sessionCode.Length == 6)
+        if (SessionExists(_generatedSessionCode)
+            && UserExists())
+        {
+
+            PointerSession? session = PointerSessionApplicationService.GetPointerSessionByCode(_generatedSessionCode);
+
+            if (session is not null)
+            {
+                _error = "Session already exists";
+                return;
+            }
+
+            Guid sessionId = Guid.NewGuid();
+
+            bool result = PointerSessionApplicationService.CreatePointerSession(
+                new PointerSessionAdto()
+                    {
+                        Id = sessionId,
+                        SessionLeaderId = Guid.Parse(user!.Id),
+                        SessionCode = _generatedSessionCode
+                    }
+            );
+
+            var getResult = PointerSessionApplicationService.GetPointerSessionById(sessionId);
+
+            UriHelper.NavigateTo($"storyPointerApp/{_generatedSessionCode}/{_userName}");
+        }
+        else
+        {
+            _error = "Error";
+        }
+    }
+
+    private async Task GenerateSessionCode()
+    {
+        _generatedSessionCode = await Task.FromResult(SessionCodeGenerator.Generate());
+    }
+
+    private bool SessionExists(string sessionCode)
+    {
+        if (SessionCodeGenerator.Validate(sessionCode)) 
         {
             return true;
         }
-
-        return false;
+        else
+        {
+            _error = "Session code validation error";
+            return false;
+        }
     }
 
     private bool UserExists()
@@ -68,6 +158,7 @@
             return true;
         }
 
+        _error = "User code validation error";
         return false;
     }
 }

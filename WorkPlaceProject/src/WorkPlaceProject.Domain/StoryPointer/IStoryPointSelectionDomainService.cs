@@ -4,6 +4,10 @@
     {
         bool CreateStoryPointSelection(StoryPointSelectionDdto storyPointSelectionDdto);
 
-        StoryPointSelection? GetStoryPointSelectionById(Guid Id); 
+        StoryPointSelection? GetStoryPointSelectionById(Guid Id);
+
+        IEnumerable<StoryPointSelection> GetStoryPointSelectionBySessionId(Guid SessionId);
+
+        bool DeleteStoryPointSelectionByUserId(Guid UserId);
     }
 }

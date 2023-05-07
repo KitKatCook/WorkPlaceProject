@@ -20,6 +20,7 @@ namespace WorkPlaceProject.Application.StoryPointer
                     Id = storyPointSelectionAdto.Id,
                     SessionId = storyPointSelectionAdto.SessionId,
                     UserId = storyPointSelectionAdto.UserId,
+                    Username = storyPointSelectionAdto.Username,
                     SelectionValue = storyPointSelectionAdto.SelectionValue
                 });
         }
@@ -27,6 +28,16 @@ namespace WorkPlaceProject.Application.StoryPointer
         public StoryPointSelection? GetStoryPointSelectionById(Guid Id)
         {
             return _storyPointSelectionDomainService.GetStoryPointSelectionById(Id);
+        }
+        
+        public IEnumerable<StoryPointSelection> GetStoryPointSelectionBySessionId(Guid SessionId)
+        {
+            return _storyPointSelectionDomainService.GetStoryPointSelectionBySessionId(SessionId);
+        }
+
+        public bool DeleteStoryPointSelectionByUserId(Guid UserId)
+        {
+            return _storyPointSelectionDomainService.DeleteStoryPointSelectionByUserId(UserId);
         }
     }
 }

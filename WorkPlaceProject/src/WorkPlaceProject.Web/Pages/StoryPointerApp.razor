@@ -2,16 +2,20 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using WorkPlaceProject.Application;
 @using WorkPlaceProject.Application.StoryPointer;
+@using WorkPlaceProject.Application.StoryPointerSession;
 @using WorkPlaceProject.Domain.StoryPointer.ValueTypes
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
 @using Microsoft.Identity.Web
 @using Microsoft.Graph
+@using WorkPlaceProject.Domain.StoryPointer;
+@using WorkPlaceProject.Domain.StoryPointerSession;
 @inject Microsoft.Graph.GraphServiceClient GraphServiceClient
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 @inject IStoryPointSelectionApplicationService StoryPointSelectionApplicationService
+@inject IPointerSessionApplicationService PointerSessionApplicationService
 
 <PageTitle>Story Pointer</PageTitle>
 <h3>Story Pointer</h3>
@@ -23,6 +27,11 @@
         
         <section>
             <article>
+                <div class="form-group">
+                    <label>
+                        Messages:
+                    </label>
+                </div>
                 <ul id="messagesList">
                     @foreach (var message in _messages)
                     {
@@ -34,6 +43,34 @@
 
         <section>
             <article>
+                <div class="form-group">
+                    <label>
+                        Selected Values:
+                    </label>
+                </div>
+                <div class="row">
+
+                    @foreach (var card in StoryPointSelections)
+                    {
+                        <div class="column">
+                            <div class="card">
+                                <h3>@card.Value</h3>
+                                <h3>@card.Description</h3>
+                                <h3>@card.Username</h3>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </article>
+        </section>
+
+        <section>
+            <article>
+                <div class="form-group">
+                    <label>
+                        Story Point Cards:
+                    </label>
+                </div>
                 <div class="row">
 
                     @foreach (var card in FibonacciValueType.Values)
@@ -59,6 +96,8 @@
             </div>
        </section>
 
+        <h1>@_error</h1>
+
     </Authorized>
     <NotAuthorized>
         ahhhhhhhh
@@ -68,6 +107,7 @@
 @code {
     private HubConnection? _hubConnection;
     private List<string> _messages = new List<string>();
+    private IEnumerable<UserValueType> StoryPointSelections = new List<UserValueType>();
     private User? user;
 
     [Parameter]
@@ -78,6 +118,7 @@
 
     private string? _messageInput;
     private string? selectedValue;
+    private string? _error;
 
     public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
@@ -109,7 +150,12 @@
             var encodedMsg = $"{message}";
             _messages.Add(encodedMsg);
             InvokeAsync(StateHasChanged);
+        });
 
+        _hubConnection.On<Guid, string> ("ReceiveStoryPointValueUpdated", (sessionId, session) =>
+        {
+            GetUsersStoryPointValues(sessionId);
+            InvokeAsync(StateHasChanged);
         });
 
         await _hubConnection.StartAsync();
@@ -140,27 +186,42 @@
 
     private async Task SendStoryPoints(string storyPoints)
     {
-        Guid id = Guid.NewGuid();
+
+        PointerSession? session = PointerSessionApplicationService.GetPointerSessionByCode(SessionCode);
+
+        if (session is null)
+        {
+            _error = $"Session does not exist for code=[{SessionCode}].";
+            return;
+        }
+
+        Guid storyPointSelectionId = Guid.NewGuid();
 
         bool result = StoryPointSelectionApplicationService.CreateStoryPointSelection(
             new StoryPointSelectionAdto()
                 {
-                    Id = id,
-                    SessionId = Guid.NewGuid(),
-                    UserId = Guid.NewGuid(),
+                    Id = storyPointSelectionId,
+                    SessionId = session.Id,
+                    UserId = Guid.Parse(user.Id),
+                    Username = user.GivenName,
                     SelectionValue = storyPoints
                 }
         );
 
-        var getResult = StoryPointSelectionApplicationService.GetStoryPointSelectionById(id);
+        var getResult = StoryPointSelectionApplicationService.GetStoryPointSelectionById(storyPointSelectionId);
 
         selectedValue = storyPoints;
         if (_hubConnection is not null)
         {
-            await _hubConnection.SendAsync("SendGroupMessage", SessionCode, UserCode, $" selected {selectedValue} story points.");
-            await _hubConnection.SendAsync("SendGroupInfoMessage", SessionCode, UserCode, $" selected {selectedValue} story points.");
+            await _hubConnection.SendAsync("StoryPointValueUpdated", session.Id, SessionCode);
         }
 
+    }
+
+    private void GetUsersStoryPointValues(Guid sessionId)
+    {
+        var results = StoryPointSelectionApplicationService.GetStoryPointSelectionBySessionId(sessionId);
+        StoryPointSelections = results.Select(x => new UserValueType(0, x.SelectionValue, "", x.Username));
     }
 
 
@@ -171,4 +232,5 @@
             await _hubConnection.DisposeAsync();
         }
     }
+
 }

@@ -23,6 +23,10 @@ namespace WorkPlaceProject.Web.Hubs
             await Clients.Group(group).SendAsync("ReceiveInfoMessage", user, message);
         }
 
+        public async Task StoryPointValueUpdated(Guid sessionId, string sessionCode)
+        {
+            await Clients.Group(sessionCode).SendAsync("ReceiveStoryPointValueUpdated", sessionId, sessionCode);
+        }
 
         public async Task AddToGroup(string groupName, string userName)
         {

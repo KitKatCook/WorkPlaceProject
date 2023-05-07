@@ -29,3 +29,5 @@
 /WorkPlaceProject/src/WorkPlaceProject.Web/bin/Debug/net7.0
 /WorkPlaceProject/WorkPlaceProject.Common/bin/Debug/net6.0
 /WorkPlaceProject/WorkPlaceProject.Common/obj
+/WorkPlaceProject/WorkPlaceProject.Application.Tests/bin/Debug/net6.0
+/WorkPlaceProject/WorkPlaceProject.Application.Tests/obj

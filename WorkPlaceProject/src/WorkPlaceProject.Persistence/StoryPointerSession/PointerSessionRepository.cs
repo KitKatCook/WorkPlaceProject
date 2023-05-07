@@ -18,8 +18,6 @@ namespace WorkPlaceProject.Persistence.StoryPointerSession
         {
             IDatabase database = Redis.GetDatabase();
 
-            //return database.StringSet(pointerSession.Id.ToString(), JsonSerializer.Serialize(pointerSession));
-
             return database.SetAdd(RedisStrings.SetSession, JsonSerializer.Serialize(pointerSession));
         }
 

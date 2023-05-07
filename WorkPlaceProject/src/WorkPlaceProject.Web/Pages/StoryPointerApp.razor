@@ -1,6 +1,7 @@
 ﻿@page "/storyPointerApp/{sessionCode}/{userCode}"
 @using Microsoft.AspNetCore.SignalR.Client
 @using WorkPlaceProject.Application;
+@using WorkPlaceProject.Application.StoryPointer;
 @using WorkPlaceProject.Domain.StoryPointer.ValueTypes
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
@@ -10,6 +11,7 @@
 @inject Microsoft.Graph.GraphServiceClient GraphServiceClient
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
+@inject IStoryPointSelectionApplicationService StoryPointSelectionApplicationService
 
 <PageTitle>Story Pointer</PageTitle>
 <h3>Story Pointer</h3>
@@ -138,6 +140,20 @@
 
     private async Task SendStoryPoints(string storyPoints)
     {
+        Guid id = Guid.NewGuid();
+
+        bool result = StoryPointSelectionApplicationService.CreateStoryPointSelection(
+            new StoryPointSelectionAdto()
+                {
+                    Id = id,
+                    SessionId = Guid.NewGuid(),
+                    UserId = Guid.NewGuid(),
+                    SelectionValue = storyPoints
+                }
+        );
+
+        var getResult = StoryPointSelectionApplicationService.GetStoryPointSelectionById(id);
+
         selectedValue = storyPoints;
         if (_hubConnection is not null)
         {

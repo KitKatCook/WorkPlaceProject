@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Graph;
-using Microsoft.Identity.Web;
 
 namespace WorkPlaceProject.Web.Hubs
 {

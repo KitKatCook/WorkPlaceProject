@@ -4,10 +4,11 @@ using WorkPlaceProject.Application.Weather;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
+using StackExchange.Redis;
+using WorkPlaceProject.Persistence.StoryPointer;
+using WorkPlaceProject.Application.StoryPointer;
+using WorkPlaceProject.Domain.StoryPointer;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,13 @@ builder.Services.AddServerSideBlazor()
     .AddMicrosoftIdentityConsentHandler();
 
 builder.Services.AddSingleton<WeatherForecastApplicationService>();
+
+builder.Services.AddScoped<IStoryPointSelectionApplicationService, StoryPointSelectionApplicationService>();
+builder.Services.AddScoped<IStoryPointSelectionDomainService, StoryPointSelectionDomainService>();
+builder.Services.AddScoped<IStoryPointSelectionRepository, StoryPointSelectionRepository>();
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(options => 
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));
 
 builder.Services.AddResponseCompression(opts =>
 {
@@ -72,7 +80,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapBlazorHub();
-app.MapHub<ChatHub>("/chathub");
 app.MapHub<StoryPointerHub>("/storypointerhub");
 app.MapFallbackToPage("/_Host");
 

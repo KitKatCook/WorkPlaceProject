@@ -28,22 +28,34 @@ namespace WorkPlaceProject.Web.Hubs
             await Clients.Group(sessionCode).SendAsync("ReceiveStoryPointValueUpdated", sessionId, sessionCode);
         }
 
-        public async Task AddToGroup(string groupName, string userName)
+        public async Task RevealUserStoryPointValues(string sessionCode)
         {
-            _connectionMap.Add(Context.ConnectionId, groupName, userName);
-
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-
-            await Clients.Group(groupName)
-                .SendAsync("ReceiveInfoMessage", $"{userName} has joined the session=[{groupName}].");
+            await Clients.Group(sessionCode).SendAsync("RevealStoryPointValues", sessionCode);
         }
 
-        public async Task RemoveFromGroup(string groupName, string userName)
+        public async Task HideUserStoryPointValues(string sessionCode)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            await Clients.Group(sessionCode).SendAsync("HideStoryPointValues", sessionCode);
+        }
 
-            await Clients.Group(groupName)
-                .SendAsync("ReceiveInfoMessage", $"{userName} has left the session=[{groupName}].");
+        public async Task AddToGroup(string sessionCode, string userName)
+        {
+            _connectionMap.Add(Context.ConnectionId, sessionCode, userName);
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, sessionCode);
+
+            await Clients.Group(sessionCode)
+                .SendAsync("ReceiveInfoMessage", $"{userName} has joined the session=[{sessionCode}].");
+        }
+
+        public async Task RemoveFromGroup(string sessionCode, string userName)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionCode);
+
+            await Clients.Group(sessionCode)
+                .SendAsync("ReceiveInfoMessage", $"{userName} has left the session=[{sessionCode}].");
+
+            await Clients.Group(sessionCode).SendAsync("RemoveExitingUserStoryPointValues", sessionCode);
 
             _connectionMap.Remove(Context.ConnectionId);
         }

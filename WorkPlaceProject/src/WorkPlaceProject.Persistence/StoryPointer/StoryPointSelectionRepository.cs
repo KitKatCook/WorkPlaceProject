@@ -18,8 +18,6 @@ namespace WorkPlaceProject.Persistence.StoryPointer
         {
             IDatabase database = Redis.GetDatabase();
 
-            //database.StringSet(storyPointSelection.Id.ToString(), JsonSerializer.Serialize(storyPointSelection));
-
             var existingSelection = GetStoryPointSelectionByUserId(storyPointSelection.UserId);
 
             if (existingSelection is not null)

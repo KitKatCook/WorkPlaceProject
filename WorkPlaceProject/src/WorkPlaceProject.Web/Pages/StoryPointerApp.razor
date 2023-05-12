@@ -1,8 +1,10 @@
 ﻿@page "/storyPointerApp/{sessionCode}/{userCode}"
 @using Microsoft.AspNetCore.SignalR.Client
 @using WorkPlaceProject.Application;
+@using WorkPlaceProject.Application.SessionUser;
 @using WorkPlaceProject.Application.StoryPointer;
 @using WorkPlaceProject.Application.StoryPointerSession;
+@using WorkPlaceProject.Domain.SessionUser;
 @using WorkPlaceProject.Domain.StoryPointer.ValueTypes
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
@@ -16,10 +18,15 @@
 
 @inject IStoryPointSelectionApplicationService StoryPointSelectionApplicationService
 @inject IPointerSessionApplicationService PointerSessionApplicationService
+@inject ISessionUserApplicationService SessionUserApplicationService
 
 <PageTitle>Story Pointer</PageTitle>
 <h3>Story Pointer</h3>
 
+@if (isSessionLeader)
+{
+    <h3>Session: @SessionCode</h3>
+}
 <hr>
 
 <AuthorizeView>
@@ -50,18 +57,36 @@
                 </div>
                 <div class="row">
 
-                    @foreach (var card in StoryPointSelections)
+                    @foreach (var card in StoryPointSelections.OrderBy(x => x.Username))
                     {
                         <div class="column">
                             <div class="card">
-                                <h3>@card.Value</h3>
-                                <h3>@card.Description</h3>
+
+                                @if (showResults)
+                                {
+                                    <h3>@card.Value</h3>
+                                    <h3>@card.Description</h3>
+                                }
                                 <h3>@card.Username</h3>
                             </div>
                         </div>
                     }
                 </div>
             </article>
+            @if (isSessionLeader)
+            {
+                <div class="form-group">
+                        @if (showResults)
+                        {
+                            <button class="form-button" @onclick="(e => HideStoryPointValues())" disabled="@(!IsConnected)">Hide Story Points</button>
+                        }
+                        else
+                        {
+                            <button class="form-button" @onclick="(e => RevealStoryPointValues())" disabled="@(!IsConnected)">Reveal Story Points</button>
+                        }
+
+                </div>
+            }
         </section>
 
         <section>
@@ -109,6 +134,8 @@
     private List<string> _messages = new List<string>();
     private IEnumerable<UserValueType> StoryPointSelections = new List<UserValueType>();
     private User? user;
+    private bool showResults = false;
+    private bool isSessionLeader = false;
 
     [Parameter]
     public string? SessionCode { get; set; }
@@ -127,6 +154,21 @@
         try
         {
             user = await GraphServiceClient.Me.Request().GetAsync();
+
+            SessionUser? sessionuser = SessionUserApplicationService.GetSessionUserById(Guid.Parse(user.Id));
+
+            if (sessionuser is not null)
+            {
+                isSessionLeader = sessionuser.IsSessionLeader;
+
+                IEnumerable<StoryPointSelection> results = StoryPointSelectionApplicationService.GetStoryPointSelectionBySessionId(sessionuser.SessionId);
+                if (results is not null)
+                {
+                    StoryPointSelections = results.Select(x => new UserValueType(0, x.SelectionValue, "", x.Username));
+                }
+            }
+
+
         }
         catch (Exception ex)
         {
@@ -155,6 +197,18 @@
         _hubConnection.On<Guid, string> ("ReceiveStoryPointValueUpdated", (sessionId, session) =>
         {
             GetUsersStoryPointValues(sessionId);
+            InvokeAsync(StateHasChanged);
+        });
+
+        _hubConnection.On<string>("RevealStoryPointValues", (SessionCode) =>
+        {
+            showResults = true;
+            InvokeAsync(StateHasChanged);
+        });
+
+        _hubConnection.On<string>("HideStoryPointValues", (SessionCode) =>
+        {
+            showResults = false;
             InvokeAsync(StateHasChanged);
         });
 
@@ -224,6 +278,21 @@
         StoryPointSelections = results.Select(x => new UserValueType(0, x.SelectionValue, "", x.Username));
     }
 
+    private async Task RevealStoryPointValues()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.SendAsync("RevealUserStoryPointValues", SessionCode);
+        }
+    }
+
+    private async Task HideStoryPointValues()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.SendAsync("HideUserStoryPointValues", SessionCode);
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {

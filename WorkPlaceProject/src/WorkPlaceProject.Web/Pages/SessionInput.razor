@@ -6,54 +6,67 @@
 @using WorkPlaceProject.Application;
 @using WorkPlaceProject.Application.StoryPointer;
 @using WorkPlaceProject.Application.StoryPointerSession;
+@using WorkPlaceProject.Application.SessionUser;
 @using WorkPlaceProject.Domain.StoryPointerSession;
 
 @inject Microsoft.Graph.GraphServiceClient GraphServiceClient
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 @inject IPointerSessionApplicationService PointerSessionApplicationService
+@inject ISessionUserApplicationService SessionUserApplicationService
 
 <h1>Planning Poker</h1>
 
-<h2>Join Session</h2>
-
-<div class="form-group">
-    <label>
-        Username:
-        <input @bind="_userName" size="50" disabled />
-    </label>
+<div class="float-container">
+    <div class="float-child">
+        <div class="form-group">
+            <h2>Join Session</h2>
+            <div class="form-row">
+                <label>
+                    Username:
+                </label>
+                <input class="form-input" @bind="_userName" size="50" disabled />
+            </div>
+            <div class="form-row">
+                <label>
+                    Session Code:
+                </label>
+                <input class="form-input" style="color: black" @bind="_sessionCode" size="50" />
+            </div>
+            <div class="form-row">
+                <label>
+                    <button class="form-large-button" @onclick="JoinSession">Join</button>
+                </label>
+            </div>
+    </div>
+    </div>
+    <div class="float-child">
+        <div class="form-group">
+            <h2>Host Session</h2>
+            <div class="form-row">
+                <label>
+                    Username:
+                </label>
+                <input class="form-input" @bind="_userName" size="50" disabled />
+            </div>
+            <div class="form-row">
+                <label>
+                    Generate Code:
+                </label>
+                <button class="form-button" @onclick="GenerateSessionCode">Generate</button>
+            </div>
+            <div class="form-row">
+                <label>
+                    SessionCode:
+                </label>
+                <input class="form-input" @bind="_generatedSessionCode" size="50" disabled />
+            </div>
+            <div class="form-row">
+                <button class="form-large-button" @onclick="HostSession">Host</button>
+            </div>
+        </div>
+    </div>
 </div>
-
-<div class="form-group">
-    <label>
-        Session Code:
-        <input @bind="_sessionCode" size="50" />
-    </label>
-</div>
-<button @onclick="JoinSession">Join</button>
-
-<br />
-
-<h2>Host Session</h2>
-
-<div class="form-group">
-    <label>
-        Username:
-        <input @bind="_userName" size="50" disabled />
-    </label>
-</div>
-<div class="form-group">
-    <label>
-        Generate Code:
-        <button @onclick="GenerateSessionCode">Generate</button>
-    </label>
-    <label>
-        SessionCode:
-        <input @bind="_generatedSessionCode" size="50" disabled />
-    </label>
-</div>
-
-<button @onclick="HostSession">Host</button>
 
 <h1>@_error</h1>
 
@@ -93,6 +106,15 @@
                 return;
             }
 
+            _ = SessionUserApplicationService.CreateSessionUser(
+                new SessionUserAdto()
+                    {
+                        Id = Guid.NewGuid(),
+                        AzureId = Guid.Parse(user!.Id),
+                        SessionId = session.Id,
+                        IsSessionLeader = false
+                    }
+                );
 
             UriHelper.NavigateTo($"storyPointerApp/{_sessionCode}/{_userName}");
         }
@@ -114,14 +136,23 @@
 
             Guid sessionId = Guid.NewGuid();
 
-            bool result = PointerSessionApplicationService.CreatePointerSession(
+            _ = PointerSessionApplicationService.CreatePointerSession(
                 new PointerSessionAdto()
                     {
                         Id = sessionId,
                         SessionLeaderId = Guid.Parse(user!.Id),
                         SessionCode = _generatedSessionCode
                     }
-            );
+                );
+
+            _ = SessionUserApplicationService.CreateSessionUser(
+                new SessionUserAdto()
+                    {
+                        Id = sessionId,
+                        AzureId = Guid.Parse(user!.Id),
+                        IsSessionLeader = true
+                    }
+                );
 
             var getResult = PointerSessionApplicationService.GetPointerSessionById(sessionId);
 
@@ -129,7 +160,7 @@
         }
         else
         {
-            _error = "Error";
+            _error = "Please generate a session code to host a session. The code should be 8 characters/numbers long.";
         }
     }
 

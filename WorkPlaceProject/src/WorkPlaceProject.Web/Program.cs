@@ -12,6 +12,9 @@ using WorkPlaceProject.Domain.StoryPointer;
 using WorkPlaceProject.Persistence.StoryPointerSession;
 using WorkPlaceProject.Application.StoryPointerSession;
 using WorkPlaceProject.Domain.StoryPointerSession;
+using WorkPlaceProject.Domain.SessionUser;
+using WorkPlaceProject.Persistence.SessionUser;
+using WorkPlaceProject.Application.SessionUser;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +53,11 @@ builder.Services.AddScoped<IStoryPointSelectionRepository, StoryPointSelectionRe
 builder.Services.AddScoped<IPointerSessionApplicationService, PointerSessionApplicationService>();
 builder.Services.AddScoped<IPointerSessionDomainService, PointerSessionDomainService>();
 builder.Services.AddScoped<IPointerSessionRepository, PointerSessionRepository>();
+
+
+builder.Services.AddScoped<ISessionUserApplicationService, SessionUserApplicationService>();
+builder.Services.AddScoped<ISessionUserDomainService, SessionUserDomainService>();
+builder.Services.AddScoped<ISessionUserRepository, SessionUserRepository>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(options => 
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));
@@ -91,3 +99,13 @@ app.MapHub<StoryPointerHub>("/storypointerhub");
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+
+
+//$ sudo service redis-server start
+//$ sudo service redis-server stop
+//$ sudo service redis-server restart
+
+//redis-cli
+//SCAN 0
+//FLUSHALL
+// smembers {REDIS_STRING)

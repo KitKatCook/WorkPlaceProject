@@ -1,6 +1,4 @@
-﻿using WorkPlaceProject.Domain.StoryPointerSession;
-
-namespace WorkPlaceProject.Domain.SessionUser
+﻿namespace WorkPlaceProject.Domain.SessionUser
 {
     public class SessionUserDomainService : ISessionUserDomainService
     {

@@ -4,6 +4,7 @@
     {
         public static HashSet<ValueType> Values = new HashSet<ValueType>()
         {
+            new ValueType(-1, -1, "Clear"),
             new ValueType(0, 0, "Description"),
             new ValueType(1, 1, "Description"),
             new ValueType(2, 2, "Description"),

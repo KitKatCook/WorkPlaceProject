@@ -1,11 +1,13 @@
-﻿@page "/storyPointerApp/{sessionCode}/{userCode}"
+﻿@page "/storyPointerApp/{userCode}"
 @using Microsoft.AspNetCore.SignalR.Client
 @using WorkPlaceProject.Application;
+@using WorkPlaceProject.Application.DevOpsModels;
 @using WorkPlaceProject.Application.SessionUser;
 @using WorkPlaceProject.Application.StoryPointer;
 @using WorkPlaceProject.Application.StoryPointerSession;
 @using WorkPlaceProject.Domain.SessionUser;
 @using WorkPlaceProject.Domain.StoryPointer.ValueTypes
+
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
@@ -13,6 +15,7 @@
 @using Microsoft.Graph
 @using WorkPlaceProject.Domain.StoryPointer;
 @using WorkPlaceProject.Domain.StoryPointerSession;
+@using WorkPlaceProject.Web.Ioc.Http;
 @inject Microsoft.Graph.GraphServiceClient GraphServiceClient
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
@@ -20,12 +23,14 @@
 @inject IPointerSessionApplicationService PointerSessionApplicationService
 @inject ISessionUserApplicationService SessionUserApplicationService
 
+@inject ApiClient ApiClient
+
 <PageTitle>Story Pointer</PageTitle>
 <h3>Story Pointer</h3>
 
 @if (isSessionLeader)
 {
-    <h3>Session: @SessionCode</h3>
+    <h3>Session: @PointerSession.SessionCode</h3>
 }
 <hr>
 
@@ -45,6 +50,48 @@
                         <li>@message</li>
                     }
                 </ul>
+            </article>
+        </section>
+
+        <section>
+            <article>
+                <div class="form-group">
+                    <label for="Team" class="control-label">
+                        Team
+                    </label>
+                    <select for="Team" class="form-control" @bind="SelectedTeamId">
+                        <option value=0 disabled selected hidden>
+                            [Select Team]
+                        </option>
+                        @foreach (var team in Teams)
+                        {
+                            <option value="@team.Id">
+                                @team.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+            </article>
+        </section>
+
+        <section>
+            <article>
+                <div class="form-group">
+                    <label for="Iteration" class="control-label">
+                        [Select Iteration]
+                    </label>
+                    <select for="Iteration" class="form-control" @bind="SelectedIterationId">
+                        <option value=0 disabled selected hidden>
+                            [Select Iteration]
+                        </option>
+                        @foreach (var iteration in Iterations)
+                        {
+                            <option value="@iteration.Id">
+                                @iteration.Name
+                            </option>
+                        }
+                    </select>
+                </div>
             </article>
         </section>
 
@@ -84,7 +131,6 @@
                         {
                             <button class="form-button" @onclick="(e => RevealStoryPointValues())" disabled="@(!IsConnected)">Reveal Story Points</button>
                         }
-
                 </div>
             }
         </section>
@@ -137,8 +183,7 @@
     private bool showResults = false;
     private bool isSessionLeader = false;
 
-    [Parameter]
-    public string? SessionCode { get; set; }
+    public PointerSession PointerSession;
 
     [Parameter]
     public string? UserCode { get; set; }
@@ -146,6 +191,22 @@
     private string? _messageInput;
     private string? selectedValue;
     private string? _error;
+
+    private IEnumerable<WorkPlaceProject.Application.DevOpsModels.Team> Teams = new List<WorkPlaceProject.Application.DevOpsModels.Team>();
+
+    private Guid _selectedTeamId;
+    private Guid SelectedTeamId
+    {
+        get => _selectedTeamId;
+        set
+        {
+            _selectedTeamId = value;
+            GetIterations();
+        }
+    }
+
+    private IEnumerable<Iteration> Iterations = new List<Iteration>();
+    private Guid SelectedIterationId;
 
     public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
@@ -166,9 +227,23 @@
                 {
                     StoryPointSelections = results.Select(x => new UserValueType(0, x.SelectionValue, "", x.Username));
                 }
+
+                PointerSession? session = PointerSessionApplicationService.GetPointerSessionById(sessionuser.SessionId);
+
+                if (session is null)
+                {
+                    _error = $"Session does not exist.";
+                    return;
+                }
+
+                PointerSession = session;
+
+
+                ApiClient apiClient = new ApiClient();
+
+                Teams = await apiClient.GetTeams();
+
             }
-
-
         }
         catch (Exception ex)
         {
@@ -214,7 +289,7 @@
 
         await _hubConnection.StartAsync();
 
-        await _hubConnection.SendAsync("AddToGroup", SessionCode, UserCode);
+        await _hubConnection.SendAsync("AddToGroup", PointerSession.SessionCode, UserCode);
 
     }
 
@@ -226,9 +301,9 @@
             return;
         }
 
-        if (_hubConnection is not null && SessionCode is not null)
+        if (_hubConnection is not null && PointerSession.SessionCode is not null)
         {
-            await _hubConnection.SendAsync("SendGroupMessage", SessionCode, UserCode, _messageInput);
+            await _hubConnection.SendAsync("SendGroupMessage", PointerSession.SessionCode, UserCode, _messageInput);
             _messageInput = "";
         }
         else if(_hubConnection is not null)
@@ -240,13 +315,9 @@
 
     private async Task SendStoryPoints(string storyPoints)
     {
-
-        PointerSession? session = PointerSessionApplicationService.GetPointerSessionByCode(SessionCode);
-
-        if (session is null)
+        if (storyPoints == "-1")
         {
-            _error = $"Session does not exist for code=[{SessionCode}].";
-            return;
+
         }
 
         Guid storyPointSelectionId = Guid.NewGuid();
@@ -255,7 +326,7 @@
             new StoryPointSelectionAdto()
                 {
                     Id = storyPointSelectionId,
-                    SessionId = session.Id,
+                    SessionId = PointerSession.Id,
                     UserId = Guid.Parse(user.Id),
                     Username = user.GivenName,
                     SelectionValue = storyPoints
@@ -267,7 +338,7 @@
         selectedValue = storyPoints;
         if (_hubConnection is not null)
         {
-            await _hubConnection.SendAsync("StoryPointValueUpdated", session.Id, SessionCode);
+            await _hubConnection.SendAsync("StoryPointValueUpdated", PointerSession.Id, PointerSession.SessionCode);
         }
 
     }
@@ -282,7 +353,7 @@
     {
         if (_hubConnection is not null)
         {
-            await _hubConnection.SendAsync("RevealUserStoryPointValues", SessionCode);
+            await _hubConnection.SendAsync("RevealUserStoryPointValues", PointerSession.SessionCode);
         }
     }
 
@@ -290,8 +361,17 @@
     {
         if (_hubConnection is not null)
         {
-            await _hubConnection.SendAsync("HideUserStoryPointValues", SessionCode);
+            await _hubConnection.SendAsync("HideUserStoryPointValues", PointerSession.SessionCode);
         }
+    }
+
+    private async Task GetIterations()
+    {
+        ApiClient apiClient = new ApiClient();
+
+        Iterations = new List<Iteration>();
+
+        Iterations = await apiClient.GetIterations(SelectedTeamId);
     }
 
     public async ValueTask DisposeAsync()
@@ -301,5 +381,4 @@
             await _hubConnection.DisposeAsync();
         }
     }
-
 }

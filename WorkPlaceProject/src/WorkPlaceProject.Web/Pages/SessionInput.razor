@@ -8,12 +8,14 @@
 @using WorkPlaceProject.Application.StoryPointerSession;
 @using WorkPlaceProject.Application.SessionUser;
 @using WorkPlaceProject.Domain.StoryPointerSession;
+@using WorkPlaceProject.Web.Ioc.Http;
 
 @inject Microsoft.Graph.GraphServiceClient GraphServiceClient
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 @inject IPointerSessionApplicationService PointerSessionApplicationService
 @inject ISessionUserApplicationService SessionUserApplicationService
+
 
 <h1>Planning Poker</h1>
 
@@ -116,7 +118,7 @@
                     }
                 );
 
-            UriHelper.NavigateTo($"storyPointerApp/{_sessionCode}/{_userName}");
+            UriHelper.NavigateTo($"storyPointerApp/{_userName}");
         }
     }
 
@@ -150,13 +152,14 @@
                     {
                         Id = sessionId,
                         AzureId = Guid.Parse(user!.Id),
+                        SessionId = sessionId,
                         IsSessionLeader = true
                     }
                 );
 
             var getResult = PointerSessionApplicationService.GetPointerSessionById(sessionId);
 
-            UriHelper.NavigateTo($"storyPointerApp/{_generatedSessionCode}/{_userName}");
+            UriHelper.NavigateTo($"storyPointerApp/{_userName}");
         }
         else
         {

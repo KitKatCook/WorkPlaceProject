@@ -15,6 +15,7 @@ using WorkPlaceProject.Domain.StoryPointerSession;
 using WorkPlaceProject.Domain.SessionUser;
 using WorkPlaceProject.Persistence.SessionUser;
 using WorkPlaceProject.Application.SessionUser;
+using WorkPlaceProject.Web.Ioc.Http;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +59,7 @@ builder.Services.AddScoped<IPointerSessionRepository, PointerSessionRepository>(
 builder.Services.AddScoped<ISessionUserApplicationService, SessionUserApplicationService>();
 builder.Services.AddScoped<ISessionUserDomainService, SessionUserDomainService>();
 builder.Services.AddScoped<ISessionUserRepository, SessionUserRepository>();
+builder.Services.AddScoped<ApiClient, ApiClient>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(options => 
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));

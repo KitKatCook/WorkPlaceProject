@@ -6,6 +6,6 @@
         public Guid SessionId { get; set; }
         public Guid UserId { get; set; }
         public string Username { get; set; }
-        public string SelectionValue { get; set; }
+        public int SelectionValue { get; set; }
     }
 }

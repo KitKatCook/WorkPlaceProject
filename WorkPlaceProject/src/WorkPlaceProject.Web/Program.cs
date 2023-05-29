@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.ResponseCompression;
 using WorkPlaceProject.Web.Hubs;
-using WorkPlaceProject.Application.Weather;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
@@ -16,6 +15,9 @@ using WorkPlaceProject.Domain.SessionUser;
 using WorkPlaceProject.Persistence.SessionUser;
 using WorkPlaceProject.Application.SessionUser;
 using WorkPlaceProject.Web.Ioc.Http;
+using WorkPlaceProject.Web.WebServices;
+using WorkPlaceProject.Application.SelectedWorkItem;
+using WorkPlaceProject.Domain.SelectedWorkItem;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +47,7 @@ builder.Services.AddRazorPages()
 builder.Services.AddServerSideBlazor()
     .AddMicrosoftIdentityConsentHandler();
 
-builder.Services.AddSingleton<WeatherForecastApplicationService>();
+builder.Services.AddSingleton<SideBarViewOptionService>();
 
 builder.Services.AddScoped<IStoryPointSelectionApplicationService, StoryPointSelectionApplicationService>();
 builder.Services.AddScoped<IStoryPointSelectionDomainService, StoryPointSelectionDomainService>();
@@ -59,6 +61,11 @@ builder.Services.AddScoped<IPointerSessionRepository, PointerSessionRepository>(
 builder.Services.AddScoped<ISessionUserApplicationService, SessionUserApplicationService>();
 builder.Services.AddScoped<ISessionUserDomainService, SessionUserDomainService>();
 builder.Services.AddScoped<ISessionUserRepository, SessionUserRepository>();
+
+builder.Services.AddScoped<ISelectedWorkItemApplicationService, SelectedWorkItemApplicationService>();
+builder.Services.AddScoped<ISelectedWorkItemDomainService, SelectedWorkItemDomainService>();
+builder.Services.AddScoped<ISelectedWorkItemRepository, SelectedWorkItemRepository>();
+
 builder.Services.AddScoped<ApiClient, ApiClient>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(options => 

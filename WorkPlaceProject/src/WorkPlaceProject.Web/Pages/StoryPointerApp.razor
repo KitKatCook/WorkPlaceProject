@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using WorkPlaceProject.Application;
 @using WorkPlaceProject.Application.DevOpsModels;
+@using WorkPlaceProject.Application.SelectedWorkItem;
 @using WorkPlaceProject.Application.SessionUser;
 @using WorkPlaceProject.Application.StoryPointer;
 @using WorkPlaceProject.Application.StoryPointerSession;
@@ -22,150 +23,250 @@
 @inject IStoryPointSelectionApplicationService StoryPointSelectionApplicationService
 @inject IPointerSessionApplicationService PointerSessionApplicationService
 @inject ISessionUserApplicationService SessionUserApplicationService
+@inject ISelectedWorkItemApplicationService SelectedWorkItemApplicationService
 
 @inject ApiClient ApiClient
 
 <PageTitle>Story Pointer</PageTitle>
 <h3>Story Pointer</h3>
 
-@if (isSessionLeader)
+@if (_isSessionLeader)
 {
-    <h3>Session: @PointerSession.SessionCode</h3>
+    <h3>Session Code: @PointerSession.SessionCode</h3>
 }
 <hr>
 
 <AuthorizeView>
     <Authorized>
-        
-        <section>
-            <article>
-                <div class="form-group">
-                    <label>
-                        Messages:
-                    </label>
-                </div>
-                <ul id="messagesList">
-                    @foreach (var message in _messages)
+
+        <div class="container sp-container" style="max-width:100%;  background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
+            <div class="row">
+                <div class="col-9 p-3">
+                    
+                    @if (_isSessionLeader)
                     {
-                        <li>@message</li>
+                        <div class="container sp-container">
+                            <div class="row">
+                                <div class="col-4 ">
+                                    <section>
+                                        <div class="form-group">
+                                            <label for="Team" class="control-label">
+                                                Team
+                                            </label>
+                                            <select for="Team" class="form-control" @bind="SelectedTeamId">
+                                                @if (Teams.Count() < 1)
+                                                {
+                                                    <option value="" selected disabled hidden>
+                                                        [Select Team]
+                                                    </option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="" selected disabled hidden>
+                                                        [Select Team]
+                                                    </option>
+                                                    @foreach (var team in Teams)
+                                                    {
+                                                        <option value="@team.Id">
+                                                            @team.Name
+                                                        </option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="col-4 ">
+                                    <section>
+                                        <div class="form-group">
+                                            <label for="Iteration" class="control-label">
+                                                Iteration
+                                            </label>
+                                            <select for="Iteration" class="form-control" @bind="SelectedIterationId">
+
+                                                @if (Iterations.Count() < 1)
+                                                {
+                                                    <option value="" selected disabled hidden>
+                                                        [Select Iteration]
+                                                    </option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="" selected disabled hidden>
+                                                        [Select Iteration]
+                                                    </option>
+                                                    @foreach (var iteration in Iterations)
+                                                    {
+                                                        <option value="@iteration.Id">
+                                                            @iteration.Name
+                                                        </option>
+                                                    }
+                                                }
+
+                                            </select>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="col-4 ">
+                                    <section>
+                                        <div class="form-group">
+                                            <label for="WorkItem" class="control-label">
+                                                Work Item
+                                            </label>
+                                            <select for="WorkItem" class="form-control" @bind="SelectedWorkItemId">
+                                                @if (WorkItems.Count() < 1)
+                                                {
+                                                    <option value="" selected disabled hidden>
+                                                        [Select Work Item]
+                                                    </option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="" selected disabled hidden>
+                                                        [Select Work Item]
+                                                    </option>
+                                                    @foreach (var workItem in WorkItems)
+                                                    {
+                                                        <option value="@workItem.Id">
+                                                            @workItem.Fields.Title
+                                                        </option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+
                     }
-                </ul>
-            </article>
-        </section>
 
-        <section>
-            <article>
-                <div class="form-group">
-                    <label for="Team" class="control-label">
-                        Team
-                    </label>
-                    <select for="Team" class="form-control" @bind="SelectedTeamId">
-                        <option value=0 disabled selected hidden>
-                            [Select Team]
-                        </option>
-                        @foreach (var team in Teams)
-                        {
-                            <option value="@team.Id">
-                                @team.Name
-                            </option>
-                        }
-                    </select>
-                </div>
-            </article>
-        </section>
+                    <div class="container sp-container" style="margin-top:20px">
+                        <div class="row">
+                            <div class="col-6" style="border:dashed; border-color:gray;min-height:300px; padding:10px;overflow: auto;">
+                                <section>
+                                    <div class="col-12" style="text-align:center">
+                                        Acceptance Criteria
+                                    </div>
+                                    <div class="col-12">
+                                        @((MarkupString)SelectedStoryAcceptanceCriteria)
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="col-6" style="border:dashed; border-color:gray;min-height:300px; padding:10px;overflow: auto;">
+                                <section>
+                                    <div class="col-12" style="text-align:center; ">
+                                        Desciption
+                                    </div>
+                                    <div class="col-12">
+                                        @((MarkupString)SelectedStoryDescription)
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
 
-        <section>
-            <article>
-                <div class="form-group">
-                    <label for="Iteration" class="control-label">
-                        [Select Iteration]
-                    </label>
-                    <select for="Iteration" class="form-control" @bind="SelectedIterationId">
-                        <option value=0 disabled selected hidden>
-                            [Select Iteration]
-                        </option>
-                        @foreach (var iteration in Iterations)
-                        {
-                            <option value="@iteration.Id">
-                                @iteration.Name
-                            </option>
-                        }
-                    </select>
-                </div>
-            </article>
-        </section>
+                    <div class="container sp-container" style="margin-top:20px">
+                        <div class="row">
+                            <div class="col-12" style="">
+                                <div class="row">
+                                    <div class="col-12">
+                                        Selected Values:
+                                    </div>
+                                </div>
+                                <div class="col-12 row">
+                                    @foreach (var card in _storyPointSelections.OrderBy(x => x.Username))
+                                    {
+                                        <div class="column">
+                                            <div class="card">
 
-        <section>
-            <article>
-                <div class="form-group">
-                    <label>
-                        Selected Values:
-                    </label>
-                </div>
-                <div class="row">
-
-                    @foreach (var card in StoryPointSelections.OrderBy(x => x.Username))
-                    {
-                        <div class="column">
-                            <div class="card">
-
-                                @if (showResults)
+                                                @if (_showResults)
+                                                {
+                                                    <p>@card.Value</p>
+                                                    @*<p>@card.Description</p>*@
+                                                }
+                                                <p>@card.Username</p>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-12 text-center">
+                                @if (_isSessionLeader)
                                 {
-                                    <h3>@card.Value</h3>
-                                    <h3>@card.Description</h3>
+                                    @if (_showResults)
+                                    {
+                                        <button @onclick="(e => HideStoryPointValues())" disabled="@(!IsConnected)" type="button" class="btn" style="padding:10px 40px; border-radius:10px;background-color:#bbbbbb">Hide Story Points</button>
+                                    }
+                                    else
+                                    {
+                                        <button @onclick="(e => RevealStoryPointValues())" disabled="@(!IsConnected)" type="button" class="btn " style="padding:10px 40px; border-radius:10px; background-color:#bbbbbb">Reveal Story Points</button>
+                                    }
                                 }
-                                <h3>@card.Username</h3>
                             </div>
                         </div>
-                    }
-                </div>
-            </article>
-            @if (isSessionLeader)
-            {
-                <div class="form-group">
-                        @if (showResults)
-                        {
-                            <button class="form-button" @onclick="(e => HideStoryPointValues())" disabled="@(!IsConnected)">Hide Story Points</button>
-                        }
-                        else
-                        {
-                            <button class="form-button" @onclick="(e => RevealStoryPointValues())" disabled="@(!IsConnected)">Reveal Story Points</button>
-                        }
-                </div>
-            }
-        </section>
+                    </div>
 
-        <section>
-            <article>
-                <div class="form-group">
-                    <label>
-                        Story Point Cards:
-                    </label>
-                </div>
-                <div class="row">
-
-                    @foreach (var card in FibonacciValueType.Values)
-                    {
-                        <div class="column">
-                            <div class="card" @onclick="(e => SendStoryPoints(card.Value.ToString()))">
-                                <h3>@card.Value</h3>
-                                <h3>@card.Description</h3>
+                    <div class="container sp-container" style="margin-top:20px">
+                        <div class="row">
+                            <div class="col-6">
+                                Average Story Point: @StoryPointValueAverager.Average(_storyPointSelections.Select(x => x.Value).ToList())
+                            </div>
+                            <div class="col-6">
+                                <button @onclick="(e => SaveStoryPoints())" disabled="@(!IsConnected)" type="button" class="btn " style="padding:10px 40px; border-radius:10px; background-color:#bbbbbb">Save Story Points</button>
                             </div>
                         </div>
-                    }
-                </div>
-            </article>
-        </section>
+                    </div>
 
-        <section>
-            <div class="form-group">
-                <label>
-                    Message:
-                    <input @bind="_messageInput" size="50" />
-                </label>
-                <button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+                    <div class="container sp-container" style="margin-top:20px">
+                        <div class="row">
+                            <div class="col-12" style="">
+                                <div class="row">
+                                    <div class="col-12">
+                                        Select a Story Point Estimation:
+                                    </div>
+                                </div>
+                                <div class="col-12 row">
+                                    @foreach (var card in FibonacciValueType.Values)
+                                    {
+                                        <div class="column">
+                                            <div class="card" @onclick="(e => SendStoryPoints(card.Value))">
+                                                <p>@card.Value</p>
+                                                @*<p>@card.Description</p>*@
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 p-3" style="position: relative;background-image: linear-gradient(180deg, rgb(224, 224, 224) 0%, rgb(255, 255, 255) 60%);color: black;border-radius:20px">
+                    <div class="form-group">
+                        <label>
+                            Messages:
+                        </label>
+                    </div>
+                    <ul id="messagesList">
+                        @foreach (var message in _messages)
+                        {
+                            <li>@message</li>
+                        }
+                    </ul>
+                    <div class="row" style="position: absolute;bottom: 0;width: 100%;">
+                        <div class="col-10">
+                            <div class="mb-3">
+                                <input @bind="_messageInput" type="text" class="form-control" id="SendMessage" placeholder="Enter a message to send...">
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <button @onclick="Send" disabled="@(!IsConnected)" type="button" class="btn btn-light" style="padding: 5px 10px; border-radius:10px">Send</button>
+
+                        </div>
+                    </div>
+                </div>
             </div>
-       </section>
+        </div>
 
         <h1>@_error</h1>
 
@@ -178,10 +279,10 @@
 @code {
     private HubConnection? _hubConnection;
     private List<string> _messages = new List<string>();
-    private IEnumerable<UserValueType> StoryPointSelections = new List<UserValueType>();
-    private User? user;
-    private bool showResults = false;
-    private bool isSessionLeader = false;
+    private IEnumerable<UserValueType> _storyPointSelections = new List<UserValueType>();
+    private User? _user;
+    private bool _showResults = false;
+    private bool _isSessionLeader = false;
 
     public PointerSession PointerSession;
 
@@ -189,11 +290,10 @@
     public string? UserCode { get; set; }
 
     private string? _messageInput;
-    private string? selectedValue;
+    private int? _selectedValue;
     private string? _error;
 
-    private IEnumerable<WorkPlaceProject.Application.DevOpsModels.Team> Teams = new List<WorkPlaceProject.Application.DevOpsModels.Team>();
-
+    private IEnumerable<DevOpsTeam> Teams = new List<DevOpsTeam>();
     private Guid _selectedTeamId;
     private Guid SelectedTeamId
     {
@@ -201,12 +301,46 @@
         set
         {
             _selectedTeamId = value;
+
+            Iterations = new List<Iteration>();
+            WorkItems = new List<WorkItem>();
+
             GetIterations();
         }
     }
 
     private IEnumerable<Iteration> Iterations = new List<Iteration>();
-    private Guid SelectedIterationId;
+    private Guid _selectedIterationId;
+    private Guid SelectedIterationId
+    {
+        get => _selectedIterationId;
+        set
+        {
+            _selectedIterationId = value;
+
+            WorkItems = new List<WorkItem>();
+
+            GetWorkItems();
+        }
+    }
+
+    private IEnumerable<WorkItem> WorkItems = new List<WorkItem>();
+    private int _selectedWorkItemId;
+    private int SelectedWorkItemId
+    {
+        get => _selectedWorkItemId;
+        set
+        {
+            _selectedWorkItemId = value;
+            SelectedStoryDescription = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.Description;
+            SelectedStoryAcceptanceCriteria = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.AcceptanceCriteria;
+
+            SendSelectedWorkItem(SelectedWorkItemId, SelectedStoryDescription, SelectedStoryAcceptanceCriteria);
+        }
+    }
+
+    private string SelectedStoryDescription = "";
+    private string SelectedStoryAcceptanceCriteria = "";
 
     public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
@@ -214,18 +348,18 @@
     {
         try
         {
-            user = await GraphServiceClient.Me.Request().GetAsync();
+            _user = await GraphServiceClient.Me.Request().GetAsync();
 
-            SessionUser? sessionuser = SessionUserApplicationService.GetSessionUserById(Guid.Parse(user.Id));
+            SessionUser? sessionuser = SessionUserApplicationService.GetSessionUserById(Guid.Parse(_user.Id));
 
             if (sessionuser is not null)
             {
-                isSessionLeader = sessionuser.IsSessionLeader;
+                _isSessionLeader = sessionuser.IsSessionLeader;
 
                 IEnumerable<StoryPointSelection> results = StoryPointSelectionApplicationService.GetStoryPointSelectionBySessionId(sessionuser.SessionId);
                 if (results is not null)
                 {
-                    StoryPointSelections = results.Select(x => new UserValueType(0, x.SelectionValue, "", x.Username));
+                    _storyPointSelections = results.Select(x => new UserValueType(0, int.Parse(x.SelectionValue), "", x.Username));
                 }
 
                 PointerSession? session = PointerSessionApplicationService.GetPointerSessionById(sessionuser.SessionId);
@@ -242,6 +376,8 @@
                 ApiClient apiClient = new ApiClient();
 
                 Teams = await apiClient.GetTeams();
+
+                GetSelectedWorkItemValues(session.Id);
 
             }
         }
@@ -275,15 +411,21 @@
             InvokeAsync(StateHasChanged);
         });
 
+        _hubConnection.On<Guid, string>("ReceiveSelectedWorkItemUpdated", (sessionId, SessionCode) =>
+        {
+            GetSelectedWorkItemValues(sessionId);
+            InvokeAsync(StateHasChanged);
+        });
+
         _hubConnection.On<string>("RevealStoryPointValues", (SessionCode) =>
         {
-            showResults = true;
+            _showResults = true;
             InvokeAsync(StateHasChanged);
         });
 
         _hubConnection.On<string>("HideStoryPointValues", (SessionCode) =>
         {
-            showResults = false;
+            _showResults = false;
             InvokeAsync(StateHasChanged);
         });
 
@@ -313,13 +455,8 @@
         }
     }
 
-    private async Task SendStoryPoints(string storyPoints)
+    private async Task SendStoryPoints(int storyPoints)
     {
-        if (storyPoints == "-1")
-        {
-
-        }
-
         Guid storyPointSelectionId = Guid.NewGuid();
 
         bool result = StoryPointSelectionApplicationService.CreateStoryPointSelection(
@@ -327,15 +464,15 @@
                 {
                     Id = storyPointSelectionId,
                     SessionId = PointerSession.Id,
-                    UserId = Guid.Parse(user.Id),
-                    Username = user.GivenName,
+                    UserId = Guid.Parse(_user.Id),
+                    Username = _user.GivenName,
                     SelectionValue = storyPoints
                 }
         );
 
         var getResult = StoryPointSelectionApplicationService.GetStoryPointSelectionById(storyPointSelectionId);
 
-        selectedValue = storyPoints;
+        _selectedValue = storyPoints;
         if (_hubConnection is not null)
         {
             await _hubConnection.SendAsync("StoryPointValueUpdated", PointerSession.Id, PointerSession.SessionCode);
@@ -346,7 +483,45 @@
     private void GetUsersStoryPointValues(Guid sessionId)
     {
         var results = StoryPointSelectionApplicationService.GetStoryPointSelectionBySessionId(sessionId);
-        StoryPointSelections = results.Select(x => new UserValueType(0, x.SelectionValue, "", x.Username));
+        _storyPointSelections = results.Select(x => new UserValueType(0, int.Parse(x.SelectionValue), "", x.Username));
+    }
+
+    private async Task SendSelectedWorkItem(int workItemId, string description, string acceptanceCriteria)
+    {
+        bool result = SelectedWorkItemApplicationService.CreateSelectedWorkItem(
+            new SelectedWorkItemAdto()
+                {
+                    Id = workItemId,
+                    SessionId = PointerSession.Id,
+                    Description = description,
+                    AcceptanceCriteria = acceptanceCriteria,
+                    StoryPoints = null
+                }
+        );
+
+        var getResult = SelectedWorkItemApplicationService.GetSelectedWorkItemBySessionId(PointerSession.Id);
+
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.SendAsync("SelectedWorkItemUpdated", PointerSession.Id, PointerSession.SessionCode);
+        }
+
+    }
+
+    private void GetSelectedWorkItemValues(Guid sessionId)
+    {
+        var results = SelectedWorkItemApplicationService.GetSelectedWorkItemBySessionId(sessionId);
+
+        if (results is not null)
+        {
+            SelectedStoryDescription = results.Description;
+            SelectedStoryAcceptanceCriteria = results.AcceptanceCriteria;
+        }
+        else
+        {
+            SelectedStoryDescription = "[Error No Description Found]";
+            SelectedStoryAcceptanceCriteria = "[Error No Acceptance Criteria Found]";
+        }
     }
 
     private async Task RevealStoryPointValues()
@@ -369,9 +544,30 @@
     {
         ApiClient apiClient = new ApiClient();
 
-        Iterations = new List<Iteration>();
-
         Iterations = await apiClient.GetIterations(SelectedTeamId);
+    }
+
+    private async Task GetWorkItems()
+    {
+        ApiClient apiClient = new ApiClient();
+
+        WorkItems = await apiClient.GetWorkItems(SelectedTeamId, SelectedIterationId);
+    }
+
+    private async Task SaveStoryPoints()
+    {
+        if (SelectedWorkItemId == 0)
+        {
+            _error = "Please select a Work Item.";
+        }
+        else
+        {
+            ApiClient apiClient = new ApiClient();
+
+            int storyPoints = @StoryPointValueAverager.Average(_storyPointSelections.Select(x => x.Value).ToList());
+
+            apiClient.PatchWorkItemStoryPoints(storyPoints, SelectedWorkItemId);                 
+        }  
     }
 
     public async ValueTask DisposeAsync()

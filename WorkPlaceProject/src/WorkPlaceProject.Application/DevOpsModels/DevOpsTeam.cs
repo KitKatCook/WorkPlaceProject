@@ -3,7 +3,7 @@
 namespace WorkPlaceProject.Application.DevOpsModels
 {
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class Team
+    public class DevOpsTeam
     {
         [JsonProperty(PropertyName = "Id")]
         public Guid Id { get; set; }

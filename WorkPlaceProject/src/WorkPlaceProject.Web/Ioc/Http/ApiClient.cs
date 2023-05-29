@@ -1,5 +1,4 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using WorkPlaceProject.Application.DevOpsModels;
@@ -16,12 +15,11 @@ namespace WorkPlaceProject.Web.Ioc.Http
         }
 
 
-
-        public async Task<IEnumerable<Team>> GetTeams()
+        public async Task<IEnumerable<DevOpsTeam>> GetTeams()
         {
             TeamResponse result = await Get<TeamResponse>($"https://dev.azure.com/{organisationName}/_apis/projects/{projectId}/teams?api-version=2.0");
 
-            return result.Value ?? new List<Team>();
+            return result.Value ?? new List<DevOpsTeam>();
         }
 
         public async Task<IEnumerable<Iteration>> GetIterations(Guid teamId)
@@ -31,16 +29,66 @@ namespace WorkPlaceProject.Web.Ioc.Http
             return result.Value ?? new List<Iteration>();
         }
 
-        public async Task<IEnumerable<T>> GetStories<T>()
+        public async Task<IEnumerable<WorkItem>> GetWorkItems(Guid teamId, Guid iterationId)
         {
-            return new List<T>();
+            WorkItemRelationsResponse workItemRelationsResponse = await Get<WorkItemRelationsResponse>($"https://dev.azure.com/{organisationName}/{projectId}/{teamId}/_apis/work/teamsettings/iterations/{iterationId}/workitems?api-version=7.1-preview.1");
+
+            List<WorkItem> workItems = new List<WorkItem>();
+
+            if(workItemRelationsResponse is not null 
+                && workItemRelationsResponse.WorkItemRelations is not null)
+            {
+                foreach (WorkItemRelation workItemResponse in workItemRelationsResponse.WorkItemRelations)
+                {
+                    WorkItem? workItem = await GetWorkItem(workItemResponse.Target.Id);
+
+                    if (workItem is not null)
+                    {
+                        workItems.Add(workItem);
+                    }
+                }
+            }
+
+            return workItems;
+        }
+
+
+        public async Task<WorkItem?> GetWorkItem(int workItemId)
+        {
+            WorkItem? workItem = await Get<WorkItem>($"https://dev.azure.com/{organisationName}/_apis/wit/workItems/{workItemId}");
+
+            return workItem;
+        }
+
+        public async Task<WorkItem?> PatchWorkItemStoryPoints(int storyPoints, int workItemId)
+        {
+            PatchWorkItem patchWorkItem = new PatchWorkItem
+            {
+                WorkItemField = new List<WorkItemField>()
+                {
+                    new WorkItemField
+                    {
+                        Operation = "replace",
+                        Path = "/fields/Microsoft.VSTS.Scheduling.StoryPoints",
+                        Value = storyPoints
+                    }
+                }
+            };
+
+            var serialisedObject = JsonConvert.SerializeObject(patchWorkItem.WorkItemField);
+
+            StringContent content = new StringContent(serialisedObject, Encoding.UTF8, "application/json-patch+json");
+
+            WorkItem? workItem = await Patch<WorkItem>($"https://dev.azure.com/{organisationName}/_apis/wit/workItems/{workItemId}?api-version=2.0", content);
+
+            return workItem;
         }
 
         private async Task<T?> Get<T>(string requestUri)
         {
             try
             {
-                var personalaccesstoken = "idgdnu72rlgav6t5bq3nkasgetbgpmwwlvxotfi73j7qqaopi6xq";
+                var personalaccesstoken = "";
 
                 using HttpClient client = new HttpClient();
 
@@ -69,11 +117,40 @@ namespace WorkPlaceProject.Web.Ioc.Http
             }
         }
 
+        private async Task<T?> Patch<T>(string requestUri, HttpContent? content)
+        {
+            try
+            {
+                var personalaccesstoken = "";
+
+                using HttpClient client = new();
+
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json-patch+json"));
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
+                    Convert.ToBase64String(Encoding.ASCII.GetBytes(
+                            string.Format("{0}:{1}", "", personalaccesstoken))));
+
+                using HttpResponseMessage response = client.PatchAsync(requestUri, content).Result;
+
+                response.EnsureSuccessStatusCode();
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<T>(responseBody);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return default;
+            }
+        }
+
         public async Task GetProjects()
         {
             try
             {
-                var personalaccesstoken = "idgdnu72rlgav6t5bq3nkasgetbgpmwwlvxotfi73j7qqaopi6xq";
+                var personalaccesstoken = "yuaazwg6hzwdewiujvw2ncv55zgw4ybezdk3l6itoafoctoz6dma";
 
                 using (HttpClient client = new HttpClient())
                 {
@@ -104,10 +181,54 @@ namespace WorkPlaceProject.Web.Ioc.Http
 
 public class TeamResponse
 {
-    public List<Team> Value { get; set; }
+    public List<DevOpsTeam> Value { get; set; }
 }
 
 public class IterationResponse
 {
     public List<Iteration> Value { get; set; }
+}
+public class WorkItemRelationsResponse
+{
+    [JsonProperty(PropertyName = "workItemRelations")]
+    public List<WorkItemRelation> WorkItemRelations { get; set; }
+}
+
+public class WorkItemRelation
+{
+    [JsonProperty(PropertyName = "rel")]
+    public string Relationship { get; set; }
+
+    [JsonProperty(PropertyName = "source")]
+    public string Source { get; set; }
+
+    [JsonProperty(PropertyName = "target")]
+    public WorkItemRelationsTarget Target { get; set; }		
+}
+
+public class WorkItemRelationsTarget
+{
+    [JsonProperty(PropertyName = "id")]
+    public int Id { get; set; }
+
+    [JsonProperty(PropertyName = "url")]
+    public string Url { get; set; }
+}
+
+
+public class PatchWorkItem
+{
+    public List<WorkItemField> WorkItemField { get; set; }
+}
+
+public class WorkItemField
+{
+    [JsonProperty(PropertyName = "op")]
+    public string Operation { get; set; }
+
+    [JsonProperty(PropertyName = "value")]
+    public int Value { get; set; }
+
+    [JsonProperty(PropertyName = "path")]
+    public string Path { get; set; }
 }

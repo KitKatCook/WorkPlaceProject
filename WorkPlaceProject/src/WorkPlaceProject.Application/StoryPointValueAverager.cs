@@ -4,25 +4,42 @@ namespace WorkPlaceProject.Application
 {
     public static class StoryPointValueAverager
     {
-        private static decimal[] FibonacciNumbers = Array.ConvertAll(FibonacciValueType.Values.Select(x => x.Value).ToArray(), x => (decimal)x);
-
-        public static int Average(int[] storyPointValues)
+        public static int Average(List<int> numbers)
         {
-            decimal average = storyPointValues.Sum() / storyPointValues.Length;
-
-            var nearest = FibonacciNumbers.MinBy(x => Math.Abs((long)x - average));
-
-            if (IsAFibonacciNumber(average))
-            {
-                return (int)average;
-            }
-
-            return 1;
+            double average = CalculateAverage(numbers);
+            return GetClosestFibonacci(average);
         }
 
-        private static bool IsAFibonacciNumber(decimal number) 
+        public static double CalculateAverage(List<int> numbers)
         {
-            return FibonacciNumbers.Contains(number);
+            int sum = 0;
+            foreach (int num in numbers)
+            {
+                sum += num;
+            }
+
+            return (double)sum / numbers.Count;
+        }
+
+        public static int GetClosestFibonacci(double number)
+        {
+            int a = 0;
+            int b = 1;
+            while (b < number)
+            {
+                int temp = a;
+                a = b;
+                b = temp + b;
+            }
+
+            if (Math.Abs(b - number) < Math.Abs(a - number))
+            {
+                return b;
+            }
+            else
+            {
+                return a;
+            }
         }
     }
 }

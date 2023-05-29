@@ -2,7 +2,7 @@
 {
     public class UserValueType
     {
-        public UserValueType(int index, string value, string description, string username)
+        public UserValueType(int index, int value, string description, string username)
         {
             Index = index;
             Value = value;
@@ -12,7 +12,7 @@
 
         public int Index { get; set; }
 
-        public string Value { get; set; }
+        public int Value { get; set; }
 
         public string Description { get; set; }
         public string Username { get; set; }

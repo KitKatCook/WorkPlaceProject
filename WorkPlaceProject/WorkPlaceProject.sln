@@ -11,9 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Domain", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Persistence", "src\WorkPlaceProject.Persistence\WorkPlaceProject.Persistence.csproj", "{3F4ECB6F-7936-4EC3-9661-33E7047DA827}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkPlaceProject.Common", "WorkPlaceProject.Common\WorkPlaceProject.Common.csproj", "{FC05CBE1-B861-4559-84D0-D20B67EAE4CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Common", "WorkPlaceProject.Common\WorkPlaceProject.Common.csproj", "{FC05CBE1-B861-4559-84D0-D20B67EAE4CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkPlaceProject.Application.Tests", "WorkPlaceProject.Application.Tests\WorkPlaceProject.Application.Tests.csproj", "{E1106516-9EEC-4429-BEEA-26D00590F34E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Application.Tests", "WorkPlaceProject.Application.Tests\WorkPlaceProject.Application.Tests.csproj", "{E1106516-9EEC-4429-BEEA-26D00590F34E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{29F206CC-57ED-4919-AB6D-CE9A1AD9BC5C}"
 EndProject

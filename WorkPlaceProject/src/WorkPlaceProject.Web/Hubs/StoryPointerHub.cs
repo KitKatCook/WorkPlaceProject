@@ -6,8 +6,6 @@ namespace WorkPlaceProject.Web.Hubs
     [AllowAnonymous()]
     public class StoryPointerHub : Hub
     {
-        private static readonly ConnectionMap _connectionMap = new ();
-
         public async Task SendMessage(string user, string message)
         {
             await Clients.All.SendAsync("ReceiveUserMessage", user, message);
@@ -28,6 +26,11 @@ namespace WorkPlaceProject.Web.Hubs
             await Clients.Group(sessionCode).SendAsync("ReceiveStoryPointValueUpdated", sessionId, sessionCode);
         }
 
+        public async Task SelectedWorkItemUpdated(Guid sessionId, string sessionCode)
+        {
+            await Clients.Group(sessionCode).SendAsync("ReceiveSelectedWorkItemUpdated", sessionId, sessionCode);
+        }
+
         public async Task RevealUserStoryPointValues(string sessionCode)
         {
             await Clients.Group(sessionCode).SendAsync("RevealStoryPointValues", sessionCode);
@@ -40,8 +43,6 @@ namespace WorkPlaceProject.Web.Hubs
 
         public async Task AddToGroup(string sessionCode, string userName)
         {
-            _connectionMap.Add(Context.ConnectionId, sessionCode, userName);
-
             await Groups.AddToGroupAsync(Context.ConnectionId, sessionCode);
 
             await Clients.Group(sessionCode)
@@ -56,8 +57,6 @@ namespace WorkPlaceProject.Web.Hubs
                 .SendAsync("ReceiveInfoMessage", $"{userName} has left the session=[{sessionCode}].");
 
             await Clients.Group(sessionCode).SendAsync("RemoveExitingUserStoryPointValues", sessionCode);
-
-            _connectionMap.Remove(Context.ConnectionId);
         }
 
         public override Task OnConnectedAsync()
@@ -67,14 +66,6 @@ namespace WorkPlaceProject.Web.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-
-            UserDto? spUser = _connectionMap.Get(Context.ConnectionId);
-
-            if(spUser is not null)
-            {
-                await RemoveFromGroup(spUser.Group, spUser.Username);
-            }
-
             //_connections.Remove(Context.User.Identity.Name, Context.ConnectionId);
 
             await base.OnDisconnectedAsync(exception);

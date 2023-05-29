@@ -17,7 +17,7 @@
                     storyPointSelectionDdto.SessionId,
                     storyPointSelectionDdto.UserId,
                     storyPointSelectionDdto.Username,
-                    storyPointSelectionDdto.SelectionValue
+                    storyPointSelectionDdto.SelectionValue.ToString()
                 ));
         }
 

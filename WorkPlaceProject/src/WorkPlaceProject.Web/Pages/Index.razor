@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using WorkPlaceProject.Web.WebServices;
+@inject SideBarViewOptionService SideBarViewOptionService
 
 @using static Shared.SurveyPrompt
 
@@ -8,3 +10,4 @@
 
 Welcome to your new app.
 
+<button @onclick="SideBarViewOptionService.Toggle">Hide Menu</button>

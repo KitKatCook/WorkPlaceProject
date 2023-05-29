@@ -19,52 +19,43 @@
 
 <h1>Planning Poker</h1>
 
-<div class="float-container">
-    <div class="float-child">
-        <div class="form-group">
-            <h2>Join Session</h2>
-            <div class="form-row">
-                <label>
-                    Username:
-                </label>
-                <input class="form-input" @bind="_userName" size="50" disabled />
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            <div style=" background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);color: white;border-radius: 25px;padding: 40px;margin:10px; min-height:400px;">
+                <h2>Host Session</h2>
+                <div class="form-row">
+                    <div class="mb-3">
+                        <label for="HostUsername" class="form-label">Username</label>
+                        <input @bind="_userName" type="text" class="form-control" id="HostUsername" placeholder="Enter your name here">
+                    </div>
+                </div>
+                <div class="col-12 ">
+                    <button @onclick="GenerateSessionCode" type="button" class="btn btn-secondary" style="padding:10px 40px; border-radius:10px">Generate Code</button>
+                </div>
+                <div class="mb-3">
+                    <label for="HostSessionCode" class="form-label">Session Code</label>
+                    <input @bind="_generatedSessionCode" type="text" class="form-control" id="HostSessionCode" placeholder="Enter the session code here">
+                </div>
+                <div class="col-12 ">
+                    <button @onclick="HostSession" type="button" class="btn btn-light" style="padding:10px 40px; border-radius:10px">Host</button>
+                </div>
             </div>
-            <div class="form-row">
-                <label>
-                    Session Code:
-                </label>
-                <input class="form-input" style="color: black" @bind="_sessionCode" size="50" />
-            </div>
-            <div class="form-row">
-                <label>
-                    <button class="form-large-button" @onclick="JoinSession">Join</button>
-                </label>
-            </div>
-    </div>
-    </div>
-    <div class="float-child">
-        <div class="form-group">
-            <h2>Host Session</h2>
-            <div class="form-row">
-                <label>
-                    Username:
-                </label>
-                <input class="form-input" @bind="_userName" size="50" disabled />
-            </div>
-            <div class="form-row">
-                <label>
-                    Generate Code:
-                </label>
-                <button class="form-button" @onclick="GenerateSessionCode">Generate</button>
-            </div>
-            <div class="form-row">
-                <label>
-                    SessionCode:
-                </label>
-                <input class="form-input" @bind="_generatedSessionCode" size="50" disabled />
-            </div>
-            <div class="form-row">
-                <button class="form-large-button" @onclick="HostSession">Host</button>
+        </div>
+        <div class="col-6">
+            <div style=" background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);color: white;border-radius: 25px;padding: 40px;margin:10px; min-height:400px;">
+                <h2>Join Session</h2>
+                <div class="mb-3">
+                    <label for="JoinUsername" class="form-label">Username</label>
+                    <input @bind="_userName"  type="text" class="form-control" id="JoinUsername" placeholder="Enter your name here">
+                </div>
+                <div class="mb-3">
+                    <label for="JoinSessionCode" class="form-label">Session Code</label>
+                    <input @bind="_sessionCode" type="text" class="form-control" id="JoinSessionCode" placeholder="Enter the session code here">
+                </div>
+                <div class="col-12 ">
+                    <button @onclick="JoinSession" type="button" class="btn btn-light" style="padding:10px 40px; border-radius:10px">Join</button>
+                </div>
             </div>
         </div>
     </div>

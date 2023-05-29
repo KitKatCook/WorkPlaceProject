@@ -6,6 +6,7 @@
         public static string SetSession { get; } = "Session";
         public static string SetMessage { get; } = "Message";
         public static string SetUser { get; } = "User";
+        public static string SelectedWorkItem { get; } = "SelectedWorkItem";
 
 
     }

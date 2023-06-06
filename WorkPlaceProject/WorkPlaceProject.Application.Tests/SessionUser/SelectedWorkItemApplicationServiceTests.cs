@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WorkPlaceProject.Application.Tests.SelectedWorkItem
+namespace WorkPlaceProject.Application.Tests.SessionUser
 {
-    public class SelectedWorkItemApplicationServiceTests
-    { 
+    public class SessionUserApplicationServiceTests
+    {
         Random random = new Random();
         [SetUp]
         public void Setup()
@@ -16,25 +16,25 @@ namespace WorkPlaceProject.Application.Tests.SelectedWorkItem
         }
 
         [Test]
-        public void CreateSelectedWorkItem_CreatesSelectedWorkItem_ReturnsTrue()
+        public void CreateSessionUser_CreatesSessionUser_ReturnsTrue()
         {
             Assert.True(true);
         }
 
         [Test]
-        public void CreateSelectedWorkItem_CreatesSelectedWorkItem_ReturnsFalse()
+        public void CreateSessionUser_CreatesSessionUser_ReturnsFalse()
         {
             Assert.False(false);
-        }        
-        
+        }
+
         [Test]
-        public void GetSelectedWorkItemBySessionId_GetsSelectedWorkItem_ReturnsSelectedWorkItem()
+        public void GetSessionUserById_GetsSessionUser_ReturnsSessionUser()
         {
             Assert.True(true);
         }
 
         [Test]
-        public void GetSelectedWorkItemBySessionId_NoSelectedWorkItem_ReturnsNull()
+        public void GetSessionUserById_NoSessionUser_ReturnsNull()
         {
             Assert.Null(null);
         }

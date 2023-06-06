@@ -53,7 +53,8 @@
                                             <label for="Team" class="control-label">
                                                 Team
                                             </label>
-                                            <select for="Team" class="form-control" @bind="SelectedTeamId">
+                                            <select for="Team" class="form-select" @bind="SelectedTeamId">
+                                                
                                                 @if (Teams.Count() < 1)
                                                 {
                                                     <option value="" selected disabled hidden>
@@ -82,7 +83,7 @@
                                             <label for="Iteration" class="control-label">
                                                 Iteration
                                             </label>
-                                            <select for="Iteration" class="form-control" @bind="SelectedIterationId">
+                                            <select for="Iteration" class="form-select" @bind="SelectedIterationId">
 
                                                 @if (Iterations.Count() < 1)
                                                 {
@@ -113,7 +114,7 @@
                                             <label for="WorkItem" class="control-label">
                                                 Work Item
                                             </label>
-                                            <select for="WorkItem" class="form-control" @bind="SelectedWorkItemId">
+                                            <select for="WorkItem" class="form-select" @bind="SelectedWorkItemId">
                                                 @if (WorkItems.Count() < 1)
                                                 {
                                                     <option value="" selected disabled hidden>
@@ -143,6 +144,20 @@
 
                     <div class="container sp-container" style="margin-top:20px">
                         <div class="row">
+                            <div class="col-12">
+                                @if(WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId) is not null)
+                                {
+                                    string workPlaceProject = "Work Place Project";
+                                    string teamName = Teams.SingleOrDefault(x => x.Id == _selectedTeamId).Name;
+                                    string iterationName = Iterations.SingleOrDefault(x => x.Id == _selectedIterationId).Name;
+
+                                    string link = $"https://dev.azure.com/kitcookdev12/{workPlaceProject}/_sprints/taskboard/{teamName}/{workPlaceProject}/{iterationName}?workitem={_selectedWorkItemId}".Replace(" ", "%20");
+
+                                    <h4><a href="@link" target="_blank">@WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId)!.Fields.Title</a></h4>
+                                }
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="col-6" style="border:dashed; border-color:gray;min-height:300px; padding:10px;overflow: auto;">
                                 <section>
                                     <div class="col-12" style="text-align:center">
@@ -156,7 +171,7 @@
                             <div class="col-6" style="border:dashed; border-color:gray;min-height:300px; padding:10px;overflow: auto;">
                                 <section>
                                     <div class="col-12" style="text-align:center; ">
-                                        Desciption
+                                        Description
                                     </div>
                                     <div class="col-12">
                                         @((MarkupString)SelectedStoryDescription)
@@ -169,10 +184,8 @@
                     <div class="container sp-container" style="margin-top:20px">
                         <div class="row">
                             <div class="col-12" style="">
-                                <div class="row">
-                                    <div class="col-12">
-                                        Selected Values:
-                                    </div>
+                                <div class="col-12">
+                                    Selected Values:
                                 </div>
                                 <div class="col-12 row">
                                     @foreach (var card in _storyPointSelections.OrderBy(x => x.Username))
@@ -183,7 +196,6 @@
                                                 @if (_showResults)
                                                 {
                                                     <p>@card.Value</p>
-                                                    @*<p>@card.Description</p>*@
                                                 }
                                                 <p>@card.Username</p>
                                             </div>
@@ -191,9 +203,17 @@
                                     }
                                 </div>
                             </div>
-                            <div class="col-12 text-center">
-                                @if (_isSessionLeader)
-                                {
+
+                            @if (_showResults)
+                            {
+                                <div class="col-12 text-center">
+                                    Average Story Point: @StoryPointValueAverager.Average(_storyPointSelections.Select(x => x.Value).ToList())
+                                </div>
+                            }
+                            @if (_isSessionLeader)
+                            {
+                                <div class="col-6 text-center">
+
                                     @if (_showResults)
                                     {
                                         <button @onclick="(e => HideStoryPointValues())" disabled="@(!IsConnected)" type="button" class="btn" style="padding:10px 40px; border-radius:10px;background-color:#bbbbbb">Hide Story Points</button>
@@ -202,19 +222,11 @@
                                     {
                                         <button @onclick="(e => RevealStoryPointValues())" disabled="@(!IsConnected)" type="button" class="btn " style="padding:10px 40px; border-radius:10px; background-color:#bbbbbb">Reveal Story Points</button>
                                     }
-                                }
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="container sp-container" style="margin-top:20px">
-                        <div class="row">
-                            <div class="col-6">
-                                Average Story Point: @StoryPointValueAverager.Average(_storyPointSelections.Select(x => x.Value).ToList())
-                            </div>
-                            <div class="col-6">
-                                <button @onclick="(e => SaveStoryPoints())" disabled="@(!IsConnected)" type="button" class="btn " style="padding:10px 40px; border-radius:10px; background-color:#bbbbbb">Save Story Points</button>
-                            </div>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <button @onclick="(e => SaveStoryPoints())" disabled="@(!IsConnected)" type="button" class="btn " style="padding:10px 40px; border-radius:10px; background-color:#bbbbbb">Save Story Points</button>
+                                </div>
+                            }
                         </div>
                     </div>
 
@@ -232,7 +244,6 @@
                                         <div class="column">
                                             <div class="card" @onclick="(e => SendStoryPoints(card.Value))">
                                                 <p>@card.Value</p>
-                                                @*<p>@card.Description</p>*@
                                             </div>
                                         </div>
                                     }
@@ -268,7 +279,14 @@
             </div>
         </div>
 
-        <h1>@_error</h1>
+        @if (DialogIsOpen)
+        {
+            <Dialog Caption="@DialogCaption"
+                Message="@DialogMessage"
+                OnClose="@OnDialogClose"
+                Type="Dialog.Category.Okay">
+            </Dialog>
+        }
 
     </Authorized>
     <NotAuthorized>
@@ -291,7 +309,26 @@
 
     private string? _messageInput;
     private int? _selectedValue;
-    private string? _error;
+
+    private string DialogCaption = "Error";
+    private string DialogMessage = "";
+    private bool DialogIsOpen = false;
+
+    private void OpenDialog(string caption, string message)
+    {
+        DialogCaption = caption;
+        DialogIsOpen = true;
+        DialogMessage = message;
+    }
+    private async Task OnDialogClose(bool isOk)
+    {
+        if (isOk)
+        {
+
+        }
+
+        DialogIsOpen = false;
+    }
 
     private IEnumerable<DevOpsTeam> Teams = new List<DevOpsTeam>();
     private Guid _selectedTeamId;
@@ -332,15 +369,39 @@
         set
         {
             _selectedWorkItemId = value;
-            SelectedStoryDescription = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.Description;
-            SelectedStoryAcceptanceCriteria = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.AcceptanceCriteria;
 
-            SendSelectedWorkItem(SelectedWorkItemId, SelectedStoryDescription, SelectedStoryAcceptanceCriteria);
+            if (WorkItems.Count() > 0)
+            {
+                string descriptionResult = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.Description;
+
+                if (descriptionResult is null || descriptionResult.Length < 1)
+                {
+                    SelectedStoryDescription = "[No Description Found]";
+                }
+                else
+                {
+                    SelectedStoryDescription = descriptionResult;
+                }
+
+                string acResult = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.AcceptanceCriteria;
+
+                if (acResult is null || acResult.Length < 1)
+                {
+                    SelectedStoryAcceptanceCriteria = "[No Acceptance Criteria Found]";
+                }
+                else
+                {
+                    SelectedStoryAcceptanceCriteria = acResult;
+                }
+
+                SendSelectedWorkItem(SelectedWorkItemId, SelectedIterationId, SelectedTeamId, SelectedStoryDescription, SelectedStoryAcceptanceCriteria);
+            }
+
         }
     }
 
-    private string SelectedStoryDescription = "";
-    private string SelectedStoryAcceptanceCriteria = "";
+    private string SelectedStoryDescription = "Please select a Work Item";
+    private string SelectedStoryAcceptanceCriteria = "Please select a Work Item";
 
     public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
@@ -366,7 +427,7 @@
 
                 if (session is null)
                 {
-                    _error = $"Session does not exist.";
+                    OpenDialog("Error", $"Session does not exist.");
                     return;
                 }
 
@@ -486,12 +547,14 @@
         _storyPointSelections = results.Select(x => new UserValueType(0, int.Parse(x.SelectionValue), "", x.Username));
     }
 
-    private async Task SendSelectedWorkItem(int workItemId, string description, string acceptanceCriteria)
+    private async Task SendSelectedWorkItem(int workItemId, Guid iterationId, Guid teamId, string description, string acceptanceCriteria)
     {
         bool result = SelectedWorkItemApplicationService.CreateSelectedWorkItem(
             new SelectedWorkItemAdto()
                 {
                     Id = workItemId,
+                    IterationId = iterationId,
+                    TeamId = teamId,
                     SessionId = PointerSession.Id,
                     Description = description,
                     AcceptanceCriteria = acceptanceCriteria,
@@ -514,13 +577,18 @@
 
         if (results is not null)
         {
+            SelectedTeamId = results.TeamId;
+            SelectedIterationId = results.IterationId;
+
+            SelectedWorkItemId = results.Id;
+
             SelectedStoryDescription = results.Description;
             SelectedStoryAcceptanceCriteria = results.AcceptanceCriteria;
         }
         else
         {
-            SelectedStoryDescription = "[Error No Description Found]";
-            SelectedStoryAcceptanceCriteria = "[Error No Acceptance Criteria Found]";
+            SelectedStoryDescription = "Please select a Work Item";
+            SelectedStoryAcceptanceCriteria = "Please select a Work Item";
         }
     }
 
@@ -543,8 +611,20 @@
     private async Task GetIterations()
     {
         ApiClient apiClient = new ApiClient();
+        await HideStoryPointValues();
 
-        Iterations = await apiClient.GetIterations(SelectedTeamId);
+        SelectedStoryDescription = "Please select a Work Item";
+        SelectedStoryAcceptanceCriteria = "Please select a Work Item";
+        _storyPointSelections = new List<UserValueType>();
+
+        if (SelectedTeamId != Guid.Parse("00000000-0000-0000-0000-000000000000") )
+        {
+
+            Iterations = new List<Iteration>();
+            WorkItems = new List<WorkItem>();
+
+            Iterations = await apiClient.GetIterations(SelectedTeamId);
+        }
     }
 
     private async Task GetWorkItems()
@@ -558,7 +638,11 @@
     {
         if (SelectedWorkItemId == 0)
         {
-            _error = "Please select a Work Item.";
+            OpenDialog("Error", "Please select a Work Item.");
+        }
+        else if (_storyPointSelections.Count() < 1)
+        {
+            OpenDialog("Error", "No votes have been cast.");
         }
         else
         {
@@ -566,7 +650,9 @@
 
             int storyPoints = @StoryPointValueAverager.Average(_storyPointSelections.Select(x => x.Value).ToList());
 
-            apiClient.PatchWorkItemStoryPoints(storyPoints, SelectedWorkItemId);                 
+            apiClient.PatchWorkItemStoryPoints(storyPoints, SelectedWorkItemId);   
+            
+            OpenDialog("Success", "Story Points Saved.");
         }  
     }
 

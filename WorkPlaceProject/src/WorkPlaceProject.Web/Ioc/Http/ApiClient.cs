@@ -7,9 +7,10 @@ namespace WorkPlaceProject.Web.Ioc.Http
 {
     public class ApiClient
     {
-        private string projectId = "75d25206-8e06-44d8-a4d4-1c0d3cfe761b";
-        private string organisationName = "kitcookdev12";
-        private string projectName = "Work Place Project";
+        private readonly string ProjectId = "75d25206-8e06-44d8-a4d4-1c0d3cfe761b";
+        private readonly string OrganisationName = "kitcookdev12";
+
+        private string PAT = "3p3htzuf2pskv7nz2cdhwb7vwmfx5annlp4t2pabd2gsldya3sqq";
         public ApiClient()
         {
         }
@@ -17,21 +18,21 @@ namespace WorkPlaceProject.Web.Ioc.Http
 
         public async Task<IEnumerable<DevOpsTeam>> GetTeams()
         {
-            TeamResponse result = await Get<TeamResponse>($"https://dev.azure.com/{organisationName}/_apis/projects/{projectId}/teams?api-version=2.0");
+            TeamResponse result = await Get<TeamResponse>($"https://dev.azure.com/{OrganisationName}/_apis/projects/{ProjectId}/teams?api-version=2.0");
 
             return result.Value ?? new List<DevOpsTeam>();
         }
 
         public async Task<IEnumerable<Iteration>> GetIterations(Guid teamId)
         {
-            IterationResponse result = await Get<IterationResponse>($"https://dev.azure.com/{organisationName}/{projectId}/{teamId}/_apis/work/teamsettings/iterations");
+            IterationResponse result = await Get<IterationResponse>($"https://dev.azure.com/{OrganisationName}/{ProjectId}/{teamId}/_apis/work/teamsettings/iterations");
 
             return result.Value ?? new List<Iteration>();
         }
 
         public async Task<IEnumerable<WorkItem>> GetWorkItems(Guid teamId, Guid iterationId)
         {
-            WorkItemRelationsResponse workItemRelationsResponse = await Get<WorkItemRelationsResponse>($"https://dev.azure.com/{organisationName}/{projectId}/{teamId}/_apis/work/teamsettings/iterations/{iterationId}/workitems?api-version=7.1-preview.1");
+            WorkItemRelationsResponse workItemRelationsResponse = await Get<WorkItemRelationsResponse>($"https://dev.azure.com/{OrganisationName}/{ProjectId}/{teamId}/_apis/work/teamsettings/iterations/{iterationId}/workitems?api-version=7.1-preview.1");
 
             List<WorkItem> workItems = new List<WorkItem>();
 
@@ -55,7 +56,7 @@ namespace WorkPlaceProject.Web.Ioc.Http
 
         public async Task<WorkItem?> GetWorkItem(int workItemId)
         {
-            WorkItem? workItem = await Get<WorkItem>($"https://dev.azure.com/{organisationName}/_apis/wit/workItems/{workItemId}");
+            WorkItem? workItem = await Get<WorkItem>($"https://dev.azure.com/{OrganisationName}/_apis/wit/workItems/{workItemId}");
 
             return workItem;
         }
@@ -79,7 +80,7 @@ namespace WorkPlaceProject.Web.Ioc.Http
 
             StringContent content = new StringContent(serialisedObject, Encoding.UTF8, "application/json-patch+json");
 
-            WorkItem? workItem = await Patch<WorkItem>($"https://dev.azure.com/{organisationName}/_apis/wit/workItems/{workItemId}?api-version=2.0", content);
+            WorkItem? workItem = await Patch<WorkItem>($"https://dev.azure.com/{OrganisationName}/_apis/wit/workItems/{workItemId}?api-version=2.0", content);
 
             return workItem;
         }
@@ -88,15 +89,13 @@ namespace WorkPlaceProject.Web.Ioc.Http
         {
             try
             {
-                var personalaccesstoken = "";
-
-                using HttpClient client = new HttpClient();
+                using HttpClient client = new();
 
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
                     Convert.ToBase64String(Encoding.ASCII.GetBytes(
-                            string.Format("{0}:{1}", "", personalaccesstoken))));
+                            string.Format("{0}:{1}", "", PAT))));
 
                 using HttpResponseMessage response = client.GetAsync(requestUri).Result;
 
@@ -121,15 +120,13 @@ namespace WorkPlaceProject.Web.Ioc.Http
         {
             try
             {
-                var personalaccesstoken = "";
-
                 using HttpClient client = new();
 
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json-patch+json"));
 
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
                     Convert.ToBase64String(Encoding.ASCII.GetBytes(
-                            string.Format("{0}:{1}", "", personalaccesstoken))));
+                            string.Format("{0}:{1}", "", PAT))));
 
                 using HttpResponseMessage response = client.PatchAsync(requestUri, content).Result;
 
@@ -145,37 +142,6 @@ namespace WorkPlaceProject.Web.Ioc.Http
                 return default;
             }
         }
-
-        public async Task GetProjects()
-        {
-            try
-            {
-                var personalaccesstoken = "yuaazwg6hzwdewiujvw2ncv55zgw4ybezdk3l6itoafoctoz6dma";
-
-                using (HttpClient client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
-                        Convert.ToBase64String(
-                            System.Text.ASCIIEncoding.ASCII.GetBytes(
-                                string.Format("{0}:{1}", "", personalaccesstoken))));
-
-                    using (HttpResponseMessage response = client.GetAsync(
-                                "https://dev.azure.com/kitcookdev12/_apis/projects").Result)
-                    {
-                        response.EnsureSuccessStatusCode();
-                        string responseBody = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine(responseBody);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-        }
-
     }
 }
 

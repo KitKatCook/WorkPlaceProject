@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WorkPlaceProject.Application.Tests.SelectedWorkItem
+namespace WorkPlaceProject.Domain.Tests.SelectedWorkItem
 {
-    public class SelectedWorkItemApplicationServiceTests
+    public class SelectedWorkItemDomainServiceTests
     { 
         Random random = new Random();
         [SetUp]

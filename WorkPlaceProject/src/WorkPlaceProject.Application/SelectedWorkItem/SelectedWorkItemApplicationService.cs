@@ -17,6 +17,8 @@ namespace WorkPlaceProject.Application.SelectedWorkItem
                 new SelectedWorkItemDdto()
                 {
                     Id = selectedWorkItemAdto.Id,
+                    IterationId = selectedWorkItemAdto.IterationId,
+                    TeamId = selectedWorkItemAdto.TeamId,
                     SessionId = selectedWorkItemAdto.SessionId,
                     Description = selectedWorkItemAdto.Description,
                     AcceptanceCriteria = selectedWorkItemAdto.AcceptanceCriteria,

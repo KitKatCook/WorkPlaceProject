@@ -18,6 +18,8 @@ namespace WorkPlaceProject.Persistence.SessionUser
         {
             IDatabase database = Redis.GetDatabase();
 
+            _ = DeleteStoryPointSelectionByUserId(selectedWorkItem.SessionId);
+
             return database.SetAdd(RedisStrings.SelectedWorkItem, JsonSerializer.Serialize(selectedWorkItem));
         }
 
@@ -34,6 +36,19 @@ namespace WorkPlaceProject.Persistence.SessionUser
                 return result;
             }
             return null;
+        }
+
+        public bool DeleteStoryPointSelectionByUserId(Guid sessionId)
+        {
+            IDatabase database = Redis.GetDatabase();
+
+            var existingSelection = GetSelectedWorkItemBySessionId(sessionId);
+
+            if (existingSelection is not null)
+            {
+                return database.SetRemove(RedisStrings.SelectedWorkItem, JsonSerializer.Serialize(existingSelection));
+            }
+            return false;
         }
     }
 }

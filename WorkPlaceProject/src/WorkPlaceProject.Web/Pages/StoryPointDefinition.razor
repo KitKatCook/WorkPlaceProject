@@ -1,0 +1,58 @@
+﻿@page "/StoryPointDefinition"
+@using Microsoft.AspNetCore.SignalR.Client
+@using WorkPlaceProject.Application;
+@using WorkPlaceProject.Application.DevOpsModels;
+@using WorkPlaceProject.Application.SelectedWorkItem;
+@using WorkPlaceProject.Application.SessionUser;
+@using WorkPlaceProject.Application.StoryPointer;
+@using WorkPlaceProject.Application.StoryPointerSession;
+@using WorkPlaceProject.Domain.SessionUser;
+@using WorkPlaceProject.Domain.StoryPointer.ValueTypes
+
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+@using Microsoft.Identity.Web
+@using Microsoft.Graph
+@using WorkPlaceProject.Domain.StoryPointer;
+@using WorkPlaceProject.Domain.StoryPointerSession;
+@using WorkPlaceProject.Web.Ioc.Http;
+@inject Microsoft.Graph.GraphServiceClient GraphServiceClient
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+
+@inject IStoryPointSelectionApplicationService StoryPointSelectionApplicationService
+@inject IPointerSessionApplicationService PointerSessionApplicationService
+@inject ISessionUserApplicationService SessionUserApplicationService
+@inject ISelectedWorkItemApplicationService SelectedWorkItemApplicationService
+
+@inject ApiClient ApiClient
+
+<PageTitle>What is a story point?</PageTitle>
+<h3>What is a story point?</h3>
+
+<p>A story point is a representation of the <b>effort</b> required to develop a story.</p>
+<p>The effort is a combination of:</p>
+<ul>
+    <li>The amount of work to do</li>
+    <li>The complexity of the work</li>
+    <li>Any risk or uncertainty in doing the work</li>
+</ul>
+
+<AuthorizeView>
+    <Authorized>
+
+    </Authorized>
+    <NotAuthorized>
+        ahhhhhhhh
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    { }
+
+    public async ValueTask DisposeAsync()
+    {
+
+    }
+}

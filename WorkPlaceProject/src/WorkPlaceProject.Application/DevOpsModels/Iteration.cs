@@ -12,16 +12,18 @@
 
 		public string Url { get; set; }
     }
+
+    public class Attributes
+    {
+        public DateTime StartDate { get; set; }
+
+        public DateTime EndDate { get; set; }
+
+        public string TimeFrame { get; set; }
+    }
 }
 
 
-public class Attributes
-{
-	public DateTime StartDate { get; set; }
 
-	public DateTime EndDate { get; set; }
-
-	public string TimeFrame { get; set; }
-} 
 
 // TODO add link to go to the iteration in devops

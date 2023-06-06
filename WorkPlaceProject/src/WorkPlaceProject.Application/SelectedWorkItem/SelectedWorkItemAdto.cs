@@ -3,6 +3,8 @@
     public class SelectedWorkItemAdto
     {
         public int Id { get; set; }
+        public Guid IterationId { get; set; }
+        public Guid TeamId { get; set; }
         public Guid SessionId { get; set; }
         public string Description { get; set; }
         public string AcceptanceCriteria { get; set; }

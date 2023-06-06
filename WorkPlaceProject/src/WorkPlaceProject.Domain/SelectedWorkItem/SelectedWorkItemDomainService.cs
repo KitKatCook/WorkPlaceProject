@@ -14,6 +14,8 @@
             return _selectedWorkItemRepository.CreateSelectedWorkItem(
                 new SelectedWorkItem(
                     selectedWorkItemDdto.Id,
+                    selectedWorkItemDdto.IterationId,
+                    selectedWorkItemDdto.TeamId,
                     selectedWorkItemDdto.SessionId,
                     selectedWorkItemDdto.Description,
                     selectedWorkItemDdto.AcceptanceCriteria,

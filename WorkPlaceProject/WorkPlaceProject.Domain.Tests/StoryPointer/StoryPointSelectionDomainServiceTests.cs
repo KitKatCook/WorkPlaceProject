@@ -1,6 +1,6 @@
-﻿namespace WorkPlaceProject.Application.Tests.StoryPointer
+﻿namespace WorkPlaceProject.Domain.Tests.StoryPointer
 {
-    public class StoryPointSelectionApplicationServiceTests
+    public class StoryPointSelectionDomainServiceTests
     {
         Random random = new Random();
         [SetUp]

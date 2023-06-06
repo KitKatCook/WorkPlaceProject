@@ -61,7 +61,14 @@
     </div>
 </div>
 
-<h1>@_error</h1>
+@if (DialogIsOpen)
+{
+    <Dialog Caption="Error"
+        Message="@message"
+        OnClose="@OnDialogClose"
+        Type="Dialog.Category.SaveNot">
+    </Dialog>
+}
 
 @code 
 {
@@ -70,7 +77,23 @@
     string? _generatedSessionCode;
     string? _userName;
 
-    string? _error = "";
+    private string message;
+    private bool DialogIsOpen = false;
+
+    private void OpenDialog(string message)
+    {
+        DialogIsOpen = true;
+        message = message;
+    }
+    private async Task OnDialogClose(bool isOk)
+    {
+        if (isOk)
+        {
+
+        }
+
+        DialogIsOpen = false;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,7 +104,7 @@
         }
         catch (Exception ex)
         {
-            _error = "GraphServiceClient error";
+            OpenDialog("GraphServiceClient error");
             ConsentHandler.HandleException(ex);
         }
     }
@@ -95,7 +118,7 @@
 
             if (session is null)
             {
-                _error = $"Session does not exist for code=[{_sessionCode}].";
+                OpenDialog($"Session does not exist for code=[{_sessionCode}].");
                 return;
             }
 
@@ -123,7 +146,7 @@
 
             if (session is not null)
             {
-                _error = "Session already exists";
+                OpenDialog($"Session already exists for code=[{_sessionCode}].");
                 return;
             }
 
@@ -154,7 +177,7 @@
         }
         else
         {
-            _error = "Please generate a session code to host a session. The code should be 8 characters/numbers long.";
+            OpenDialog("Please generate a session code to host a session. The code should be 8 characters/numbers long.");
         }
     }
 
@@ -171,7 +194,6 @@
         }
         else
         {
-            _error = "Session code validation error";
             return false;
         }
     }
@@ -183,7 +205,6 @@
             return true;
         }
 
-        _error = "User code validation error";
         return false;
     }
 }

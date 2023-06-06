@@ -1,13 +1,214 @@
 ﻿@page "/"
-@using WorkPlaceProject.Web.WebServices;
-@inject SideBarViewOptionService SideBarViewOptionService
+<PageTitle>Planning Poker</PageTitle>
+@inject NavigationManager UriHelper
+@using Microsoft.Identity.Web
+@using Microsoft.Graph
+@using WorkPlaceProject.Application;
+@using WorkPlaceProject.Application.StoryPointer;
+@using WorkPlaceProject.Application.StoryPointerSession;
+@using WorkPlaceProject.Application.SessionUser;
+@using WorkPlaceProject.Domain.StoryPointerSession;
+@using WorkPlaceProject.Web.Ioc.Http;
 
-@using static Shared.SurveyPrompt
+@inject Microsoft.Graph.GraphServiceClient GraphServiceClient
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
-<PageTitle>Index</PageTitle>
+@inject IPointerSessionApplicationService PointerSessionApplicationService
+@inject ISessionUserApplicationService SessionUserApplicationService
 
-<h1>Hello, world!</h1>
 
-Welcome to your new app.
+<h1>Planning Poker</h1>
 
-<button @onclick="SideBarViewOptionService.Toggle">Hide Menu</button>
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            <div style=" background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);color: white;border-radius: 25px;padding: 40px;margin:10px; min-height:400px;">
+                <h2>Host Session</h2>
+                <div class="form-row">
+                    <div class="mb-3">
+                        <label for="HostUsername" class="form-label">Username</label>
+                        <input @bind="UserName" type="text" class="form-control" id="HostUsername" placeholder="Enter your name here">
+                    </div>
+                </div>
+                <div class="col-12 ">
+                    <button @onclick="GenerateSessionCode" type="button" class="btn btn-secondary" style="padding:10px 40px; border-radius:10px">Generate Code</button>
+                </div>
+                <div class="mb-3">
+                    <label for="HostSessionCode" class="form-label">Session Code</label>
+                    <input @bind="GeneratedSessionCode" type="text" class="form-control" id="HostSessionCode" placeholder="Enter the session code here">
+                </div>
+                <div class="col-12 ">
+                    <button @onclick="HostSession" type="button" class="btn btn-light" style="padding:10px 40px; border-radius:10px">Host</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div style=" background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);color: white;border-radius: 25px;padding: 40px;margin:10px; min-height:400px;">
+                <h2>Join Session</h2>
+                <div class="mb-3">
+                    <label for="JoinUsername" class="form-label">Username</label>
+                    <input @bind="UserName" type="text" class="form-control" id="JoinUsername" placeholder="Enter your name here">
+                </div>
+                <div class="mb-3">
+                    <label for="JoinSessionCode" class="form-label">Session Code</label>
+                    <input @bind="SessionCode" type="text" class="form-control" id="JoinSessionCode" placeholder="Enter the session code here">
+                </div>
+                <div class="col-12 ">
+                    <button @onclick="JoinSession" type="button" class="btn btn-light" style="padding:10px 40px; border-radius:10px">Join</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (DialogIsOpen)
+{
+    <Dialog Caption="Error"
+        Message="@DialogMessage"
+        OnClose="@OnDialogClose"
+        Type="Dialog.Category.Okay">
+    </Dialog>
+}
+
+@code
+{
+    User User;
+    string? SessionCode;
+    string? GeneratedSessionCode;
+    string? UserName;
+
+    private string DialogMessage = "";
+    private bool DialogIsOpen = false;
+
+    private void OpenDialog(string message)
+    {
+        DialogIsOpen = true;
+        DialogMessage = message;
+    }
+    private async Task OnDialogClose(bool isOk)
+    {
+        if (isOk)
+        {
+
+        }
+
+        DialogIsOpen = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            User = await GraphServiceClient.Me.Request().GetAsync();
+            UserName = User.GivenName;
+        }
+        catch (Exception ex)
+        {
+            OpenDialog("GraphServiceClient error");
+            ConsentHandler.HandleException(ex);
+        }
+    }
+
+    private void JoinSession()
+    {
+        if (SessionExists(SessionCode)
+            && UserExists())
+        {
+            PointerSession? session = PointerSessionApplicationService.GetPointerSessionByCode(SessionCode);
+
+            if (session is null)
+            {
+                OpenDialog($"Session does not exist for code=[{SessionCode}].");
+                return;
+            }
+
+            _ = SessionUserApplicationService.CreateSessionUser(
+                new SessionUserAdto()
+                    {
+                        Id = Guid.NewGuid(),
+                        AzureId = Guid.Parse(User!.Id),
+                        SessionId = session.Id,
+                        IsSessionLeader = false
+                    }
+                );
+
+            UriHelper.NavigateTo($"storyPointerApp/{UserName}");
+        }
+        else
+        {
+            OpenDialog("Please enter a valid session code to join a session. The code should be 8 characters/numbers long.");
+        }
+    }
+
+    private void HostSession()
+    {
+        if (SessionExists(GeneratedSessionCode)
+            && UserExists())
+        {
+
+            PointerSession? session = PointerSessionApplicationService.GetPointerSessionByCode(GeneratedSessionCode);
+
+            if (session is not null)
+            {
+                OpenDialog($"Session already exists for code=[{GeneratedSessionCode}].");
+                return;
+            }
+
+            Guid sessionId = Guid.NewGuid();
+
+            _ = PointerSessionApplicationService.CreatePointerSession(
+                new PointerSessionAdto()
+                    {
+                        Id = sessionId,
+                        SessionLeaderId = Guid.Parse(User!.Id),
+                        SessionCode = GeneratedSessionCode
+                    }
+                );
+
+            _ = SessionUserApplicationService.CreateSessionUser(
+                new SessionUserAdto()
+                    {
+                        Id = sessionId,
+                        AzureId = Guid.Parse(User!.Id),
+                        SessionId = sessionId,
+                        IsSessionLeader = true
+                    }
+                );
+
+            var getResult = PointerSessionApplicationService.GetPointerSessionById(sessionId);
+
+            UriHelper.NavigateTo($"storyPointerApp/{UserName}");
+        }
+        else
+        {
+            OpenDialog("Please generate a session code to host a session. The code should be 8 characters/numbers long.");
+        }
+    }
+
+    private async Task GenerateSessionCode()
+    {
+        GeneratedSessionCode = await Task.FromResult(SessionCodeGenerator.Generate());
+    }
+
+    private bool SessionExists(string sessionCode)
+    {
+        if (SessionCodeGenerator.Validate(sessionCode))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private bool UserExists()
+    {
+        if (UserName is not null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+}

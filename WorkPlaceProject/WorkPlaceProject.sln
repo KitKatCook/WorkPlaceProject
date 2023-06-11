@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Common.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Domain.Tests", "WorkPlaceProject.Domain.Tests\WorkPlaceProject.Domain.Tests.csproj", "{38973140-A24D-4D5C-8735-6E1F2F9E4320}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkPlaceProject.Web", "WorkPlaceProject.Web\WorkPlaceProject.Web.csproj", "{0DE55548-9F4E-4D8F-8F8C-96964412A702}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkPlaceProject.Web.Tests", "WorkPlaceProject.Web\WorkPlaceProject.Web.Tests.csproj", "{0DE55548-9F4E-4D8F-8F8C-96964412A702}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

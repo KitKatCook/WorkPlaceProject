@@ -53,7 +53,7 @@
                                             <label for="Team" class="control-label">
                                                 Team
                                             </label>
-                                            <select for="Team" class="form-select" @bind="SelectedTeamId">
+                                            <select for="Team" class="form-select" @bind="SelectedTeamId" @bind:after="GetIterations">
                                                 
                                                 @if (Teams.Count() < 1)
                                                 {
@@ -83,7 +83,7 @@
                                             <label for="Iteration" class="control-label">
                                                 Iteration
                                             </label>
-                                            <select for="Iteration" class="form-select" @bind="SelectedIterationId">
+                                            <select for="Iteration" class="form-select" @bind="@SelectedIterationId" @bind:after="GetWorkItems">
 
                                                 @if (Iterations.Count() < 1)
                                                 {
@@ -114,7 +114,7 @@
                                             <label for="WorkItem" class="control-label">
                                                 Work Item
                                             </label>
-                                            <select for="WorkItem" class="form-select" @bind="SelectedWorkItemId">
+                                            <select for="WorkItem" class="form-select" @bind="SelectedWorkItemId" @bind:after="SetSelectedStory">
                                                 @if (WorkItems.Count() < 1)
                                                 {
                                                     <option value="" selected disabled hidden>
@@ -148,10 +148,10 @@
                                 @if(WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId) is not null)
                                 {
                                     string workPlaceProject = "Work Place Project";
-                                    string teamName = Teams.SingleOrDefault(x => x.Id == _selectedTeamId).Name;
-                                    string iterationName = Iterations.SingleOrDefault(x => x.Id == _selectedIterationId).Name;
+                                    string teamName = Teams.SingleOrDefault(x => x.Id == SelectedTeamId).Name;
+                                    string iterationName = Iterations.SingleOrDefault(x => x.Id == SelectedIterationId).Name;
 
-                                    string link = $"https://dev.azure.com/kitcookdev12/{workPlaceProject}/_sprints/taskboard/{teamName}/{workPlaceProject}/{iterationName}?workitem={_selectedWorkItemId}".Replace(" ", "%20");
+                                    string link = $"https://dev.azure.com/kitcookdev12/{workPlaceProject}/_sprints/taskboard/{teamName}/{workPlaceProject}/{iterationName}?workitem={SelectedWorkItemId}".Replace(" ", "%20");
 
                                     <h4><a href="@link" target="_blank">@WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId)!.Fields.Title</a></h4>
                                 }
@@ -320,6 +320,7 @@
         DialogIsOpen = true;
         DialogMessage = message;
     }
+
     private async Task OnDialogClose(bool isOk)
     {
         if (isOk)
@@ -331,74 +332,13 @@
     }
 
     private IEnumerable<DevOpsTeam> Teams = new List<DevOpsTeam>();
-    private Guid _selectedTeamId;
-    private Guid SelectedTeamId
-    {
-        get => _selectedTeamId;
-        set
-        {
-            _selectedTeamId = value;
-
-            Iterations = new List<Iteration>();
-            WorkItems = new List<WorkItem>();
-
-            GetIterations();
-        }
-    }
+    private Guid SelectedTeamId;
 
     private IEnumerable<Iteration> Iterations = new List<Iteration>();
-    private Guid _selectedIterationId;
-    private Guid SelectedIterationId
-    {
-        get => _selectedIterationId;
-        set
-        {
-            _selectedIterationId = value;
-
-            WorkItems = new List<WorkItem>();
-
-            GetWorkItems();
-        }
-    }
+    private Guid SelectedIterationId;
 
     private IEnumerable<WorkItem> WorkItems = new List<WorkItem>();
-    private int _selectedWorkItemId;
-    private int SelectedWorkItemId
-    {
-        get => _selectedWorkItemId;
-        set
-        {
-            _selectedWorkItemId = value;
-
-            if (WorkItems.Count() > 0)
-            {
-                string descriptionResult = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.Description;
-
-                if (descriptionResult is null || descriptionResult.Length < 1)
-                {
-                    SelectedStoryDescription = "[No Description Found]";
-                }
-                else
-                {
-                    SelectedStoryDescription = descriptionResult;
-                }
-
-                string acResult = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.AcceptanceCriteria;
-
-                if (acResult is null || acResult.Length < 1)
-                {
-                    SelectedStoryAcceptanceCriteria = "[No Acceptance Criteria Found]";
-                }
-                else
-                {
-                    SelectedStoryAcceptanceCriteria = acResult;
-                }
-
-                SendSelectedWorkItem(SelectedWorkItemId, SelectedIterationId, SelectedTeamId, SelectedStoryDescription, SelectedStoryAcceptanceCriteria);
-            }
-
-        }
-    }
+    private int SelectedWorkItemId;
 
     private string SelectedStoryDescription = "Please select a Work Item";
     private string SelectedStoryAcceptanceCriteria = "Please select a Work Item";
@@ -610,6 +550,9 @@
 
     private async Task GetIterations()
     {
+        Iterations = new List<Iteration>();
+        WorkItems = new List<WorkItem>();
+
         ApiClient apiClient = new ApiClient();
         await HideStoryPointValues();
 
@@ -631,7 +574,39 @@
     {
         ApiClient apiClient = new ApiClient();
 
+        WorkItems = new List<WorkItem>();
+
         WorkItems = await apiClient.GetWorkItems(SelectedTeamId, SelectedIterationId);
+    }
+
+    private async Task SetSelectedStory()
+    {
+        if (WorkItems.Count() > 0)
+        {
+            string descriptionResult = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.Description;
+
+            if (descriptionResult is null || descriptionResult.Length < 1)
+            {
+                SelectedStoryDescription = "[No Description Found]";
+            }
+            else
+            {
+                SelectedStoryDescription = descriptionResult;
+            }
+
+            string acResult = WorkItems.SingleOrDefault(x => x.Id == SelectedWorkItemId).Fields.AcceptanceCriteria;
+
+            if (acResult is null || acResult.Length < 1)
+            {
+                SelectedStoryAcceptanceCriteria = "[No Acceptance Criteria Found]";
+            }
+            else
+            {
+                SelectedStoryAcceptanceCriteria = acResult;
+            }
+
+            SendSelectedWorkItem(SelectedWorkItemId, SelectedIterationId, SelectedTeamId, SelectedStoryDescription, SelectedStoryAcceptanceCriteria);
+        }
     }
 
     private async Task SaveStoryPoints()

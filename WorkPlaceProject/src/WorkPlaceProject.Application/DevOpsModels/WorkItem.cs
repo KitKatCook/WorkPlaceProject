@@ -56,5 +56,5 @@ namespace WorkPlaceProject.Application.DevOpsModels
         public string AcceptanceCriteria { get; set; }
 	}
 
-}
+	}
 // TODO add link to go to the story in devops

@@ -10,7 +10,7 @@ namespace WorkPlaceProject.Web.Ioc.Http
         private readonly string ProjectId = "75d25206-8e06-44d8-a4d4-1c0d3cfe761b";
         private readonly string OrganisationName = "kitcookdev12";
 
-        private string PAT = "3p3htzuf2pskv7nz2cdhwb7vwmfx5annlp4t2pabd2gsldya3sqq";
+        private string PAT = "3ay65ffn3jc7fndpcndrej3gm4aghyzurqi257zen3j46ilkgi3a";
         public ApiClient()
         {
         }

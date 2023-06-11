@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using WorkPlaceProject.Application.DevOpsModels;
+﻿using WorkPlaceProject.Application.DevOpsModels;
 
 namespace WorkPlaceProject.Application.Tests.DevOpsModels
 {
@@ -29,15 +28,18 @@ namespace WorkPlaceProject.Application.Tests.DevOpsModels
                 IdentityUrl = identityUrl,
                 ProjectName = projectName
             };
-
+            
             // Assert
-            Assert.That(devOpsTeam.Id, Is.EqualTo(id));
-            Assert.That(devOpsTeam.ProjectId, Is.EqualTo(projectId));
-            Assert.That(devOpsTeam.Name, Is.EqualTo(name));
-            Assert.That(devOpsTeam.Url, Is.EqualTo(url));
-            Assert.That(devOpsTeam.Description, Is.EqualTo(description));
-            Assert.That(devOpsTeam.IdentityUrl, Is.EqualTo(identityUrl));
-            Assert.That(devOpsTeam.ProjectName, Is.EqualTo(projectName));
+            Assert.Multiple(() =>
+            {
+                Assert.That(devOpsTeam.Id, Is.EqualTo(id));
+                Assert.That(devOpsTeam.ProjectId, Is.EqualTo(projectId));
+                Assert.That(devOpsTeam.Name, Is.EqualTo(name));
+                Assert.That(devOpsTeam.Url, Is.EqualTo(url));
+                Assert.That(devOpsTeam.Description, Is.EqualTo(description));
+                Assert.That(devOpsTeam.IdentityUrl, Is.EqualTo(identityUrl));
+                Assert.That(devOpsTeam.ProjectName, Is.EqualTo(projectName));
+            });
         }
     }
 }

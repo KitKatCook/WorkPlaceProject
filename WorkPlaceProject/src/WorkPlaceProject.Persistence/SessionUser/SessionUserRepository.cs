@@ -14,14 +14,14 @@ namespace WorkPlaceProject.Persistence.SessionUser
             Redis = redis;
         }
 
-        public bool CreateSessionUser(WorkPlaceProject.Domain.SessionUser.SessionUser sessionUser)
+        public bool CreateSessionUser(Domain.SessionUser.SessionUser sessionUser)
         {
             IDatabase database = Redis.GetDatabase();
 
             return database.SetAdd(RedisStrings.SetUser, JsonSerializer.Serialize(sessionUser));
         }
 
-        public WorkPlaceProject.Domain.SessionUser.SessionUser? GetSessionUserById(Guid Id)
+        public Domain.SessionUser.SessionUser? GetSessionUserById(Guid Id)
         {
             IDatabase database = Redis.GetDatabase();
 
@@ -30,7 +30,7 @@ namespace WorkPlaceProject.Persistence.SessionUser
             if (sessions is not null
                 && sessions.Count > 0)
             {
-                var result = sessions.Select(x => JsonSerializer.Deserialize<WorkPlaceProject.Domain.SessionUser.SessionUser>(x)).FirstOrDefault(x => x.AzureId == Id);
+                var result = sessions.Select(x => JsonSerializer.Deserialize<Domain.SessionUser.SessionUser>(x)).FirstOrDefault(x => x.AzureId == Id);
                 return result;
             }
             return null;

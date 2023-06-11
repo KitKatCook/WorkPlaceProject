@@ -53,7 +53,6 @@ namespace WorkPlaceProject.Web.Ioc.Http
             return workItems;
         }
 
-
         public async Task<WorkItem?> GetWorkItem(int workItemId)
         {
             WorkItem? workItem = await Get<WorkItem>($"https://dev.azure.com/{OrganisationName}/_apis/wit/workItems/{workItemId}");

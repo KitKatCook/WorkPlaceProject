@@ -1,22 +1,23 @@
 ﻿using Moq;
+using WorkPlaceProject.Application.SessionUser;
 using WorkPlaceProject.Domain.SessionUser;
 
-namespace WorkPlaceProject.Persistence.Tests.SessionUser
+namespace WorkPlaceProject.Application.Tests.SessionUser
 {
-    public class SessionUserPersistenceServiceTests
+    public class SessionUserApplicationServiceTests
     {
-        private readonly Mock<ISessionUserRepository> _sessionUserRepository = new();
+        private readonly Mock<ISessionUserDomainService> _sessionUserDomainService = new();
         private Domain.SessionUser.SessionUser _sessionUser;
 
-        private SessionUserDomainService _sessionUserDomainService;
+        private SessionUserApplicationService _sessionUserApplicationService;
 
         [SetUp]
         public void Setup()
         {
-            _sessionUserRepository.Reset();
+            _sessionUserDomainService.Reset();
 
-            _sessionUserDomainService =
-                new SessionUserDomainService(_sessionUserRepository.Object);
+            _sessionUserApplicationService =
+                new SessionUserApplicationService(_sessionUserDomainService.Object);
 
         }
 
@@ -29,7 +30,7 @@ namespace WorkPlaceProject.Persistence.Tests.SessionUser
             Guid sessionId = Guid.NewGuid();
             bool isSessionLeader = true;
 
-            SessionUserDdto sessionUserDdto = new SessionUserDdto()
+            SessionUserAdto sessionUserAdto = new SessionUserAdto()
             {
                 Id = userId,
                 AzureId = azureId,
@@ -37,7 +38,7 @@ namespace WorkPlaceProject.Persistence.Tests.SessionUser
                 IsSessionLeader = isSessionLeader
             };
 
-            _sessionUserRepository.Setup(x => x.CreateSessionUser(It.Is<Domain.SessionUser.SessionUser>(x =>
+            _sessionUserDomainService.Setup(x => x.CreateSessionUser(It.Is<SessionUserDdto>(x =>
                     x.Id == userId
                     && x.AzureId == azureId
                     && x.SessionId == sessionId
@@ -45,7 +46,7 @@ namespace WorkPlaceProject.Persistence.Tests.SessionUser
                 .Returns(true);
 
             // Act
-            bool result = _sessionUserDomainService.CreateSessionUser(sessionUserDdto);
+            bool result = _sessionUserApplicationService.CreateSessionUser(sessionUserAdto);
 
             // Assert
             Assert.IsNotNull(result);
@@ -61,7 +62,7 @@ namespace WorkPlaceProject.Persistence.Tests.SessionUser
             Guid sessionId = Guid.NewGuid();
             bool isSessionLeader = true;
 
-            SessionUserDdto sessionUserDdto = new SessionUserDdto()
+            SessionUserAdto sessionUserAdto = new SessionUserAdto()
             {
                 Id = userId,
                 AzureId = azureId,
@@ -69,11 +70,11 @@ namespace WorkPlaceProject.Persistence.Tests.SessionUser
                 IsSessionLeader = isSessionLeader
             };
 
-            _sessionUserRepository.Setup(x => x.CreateSessionUser(It.IsAny<Domain.SessionUser.SessionUser>()))
+            _sessionUserDomainService.Setup(x => x.CreateSessionUser(It.IsAny<SessionUserDdto>()))
                 .Returns(false);
 
             // Act
-            bool result = _sessionUserDomainService.CreateSessionUser(sessionUserDdto);
+            bool result = _sessionUserApplicationService.CreateSessionUser(sessionUserAdto);
 
             // Assert
             Assert.IsNotNull(result);
@@ -91,10 +92,10 @@ namespace WorkPlaceProject.Persistence.Tests.SessionUser
 
             _sessionUser = new Domain.SessionUser.SessionUser(userId, azureId, sessionId, isSessionLeader);
 
-            _sessionUserRepository.Setup(x => x.GetSessionUserById(userId)).Returns(_sessionUser);
+            _sessionUserDomainService.Setup(x => x.GetSessionUserById(userId)).Returns(_sessionUser);
 
             // Act
-            Domain.SessionUser.SessionUser? result = _sessionUserDomainService.GetSessionUserById(userId);
+            Domain.SessionUser.SessionUser? result = _sessionUserApplicationService.GetSessionUserById(userId);
 
             // Assert
             Assert.IsNotNull(result);
@@ -115,12 +116,10 @@ namespace WorkPlaceProject.Persistence.Tests.SessionUser
             Guid sessionId = Guid.NewGuid();
             bool isSessionLeader = true;
 
-            _sessionUser = new Domain.SessionUser.SessionUser(userId, azureId, sessionId, isSessionLeader);
-
-            _sessionUserRepository.Setup(x => x.GetSessionUserById(userId)).Returns(_sessionUser);
+            _sessionUser = new Domain.SessionUser.SessionUser(userId, azureId,  sessionId, isSessionLeader);
 
             // Act
-            Domain.SessionUser.SessionUser? result = _sessionUserDomainService.GetSessionUserById(invalidUserId);
+            Domain.SessionUser.SessionUser? result = _sessionUserApplicationService.GetSessionUserById(invalidUserId);
 
             // Assert
             Assert.IsNull(result);

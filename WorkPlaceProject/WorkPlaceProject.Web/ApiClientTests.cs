@@ -1,6 +1,3 @@
-using Moq;
-using NUnit.Framework.Internal.Execution;
-
 namespace WorkPlaceProject.Web
 {
     public class ApiClientTests
@@ -23,7 +20,7 @@ namespace WorkPlaceProject.Web
         //    int workItemId = 123;
 
         //    azureDevOpsServiceMock.Setup(x => x.Patch<WorkItem>(It.IsAny<string>(), It.IsAny<StringContent>()))
-        //        .ReturnsAsync(new WorkItem());
+        //        .ReturnsAsync(Mock.Of<WorkItem>);
 
         //    // Act
         //    var result = await workItemService.PatchWorkItemStoryPoints(storyPoints, workItemId);

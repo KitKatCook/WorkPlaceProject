@@ -34,18 +34,6 @@ namespace WorkPlaceProject.Application.DevOpsModels
         [JsonProperty(PropertyName = "System.Reason")]
         public string Reason { get; set; }
 
-        //[JsonProperty(PropertyName = "System.CreatedDate")]
-        //public DateTime CreatedDate { get; set; }
-
-        //[JsonProperty(PropertyName = "System.CreatedBy")]
-        //public string CreatedBy { get; set; }
-
-        //[JsonProperty(PropertyName = "System.ChangedDate")]
-        //public DateTime ChangedDate { get; set; }
-
-        //[JsonProperty(PropertyName = "System.ChangedBy")]
-        //public string ChangedBy { get; set; }
-
         [JsonProperty(PropertyName = "System.CommentCount")]
         public int CommentCount { get; set; }
 
@@ -68,5 +56,5 @@ namespace WorkPlaceProject.Application.DevOpsModels
         public string AcceptanceCriteria { get; set; }
 	}
 
-	}
+}
 // TODO add link to go to the story in devops

@@ -1,6 +1,4 @@
-﻿using WorkPlaceProject.Domain.StoryPointer.ValueTypes;
-
-namespace WorkPlaceProject.Application
+﻿namespace WorkPlaceProject.Application
 {
     public static class StoryPointValueAverager
     {
